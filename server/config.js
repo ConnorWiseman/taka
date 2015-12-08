@@ -10,7 +10,7 @@
  * @property {string} mongodb.host     - The MongoDB host.
  * @property {number} mongodb.port     - The MongoDB port.
  * @property {string} mongodb.database - The MongoDB database.
- * @function mongodb.dbURI             - A utility function that returns a MongoDB connection URI.
+ * @function          mongodb.dbURI    - A utility function that returns a MongoDB connection URI.
  */
 var config = module.exports = {
     port: 1024,

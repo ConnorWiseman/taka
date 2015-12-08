@@ -287,13 +287,16 @@ var taka = taka || function(settings) {
 
 
     /**
-     * Sets a cookie with the given parameters.
+     * Creates an embeddable chat object.
+     * @class
+     * @classdesc An embeddable chat object.
      * @readonly
      */
     var Chat = function() {
         settings.path = '/chat';
         settings.query = 'taka-sessionid=' + getCookie('taka-sessionid');
         settings.currentScript = getCurrentScript();
+
 
         var container = new Element('div');
         container.setAttributes({
@@ -305,20 +308,24 @@ var taka = taka || function(settings) {
         });
         container.appendText('container!');
 
+
         injectDependencies(function() {
             var socket = io.connect('http://127.0.0.1/', {
                 path: settings.path,
                 query: settings.query
             });
 
+
             replaceScript(container);
-            
+
+
             socket.on('session', function(session) {
                 setCookie('taka-sessionid', session._id);
                 console.log(session);
             });
         });
     };
+
 
     return new Chat();
 };
