@@ -1,5 +1,6 @@
 'use strict';
 
+
 var taka = taka || function(settings) {
     /**
      * Obtains a reference to the currently executing script instance.
@@ -311,10 +312,6 @@ var taka = taka || function(settings) {
             });
 
             replaceScript(container);
-
-            socket.on('connect', function(thing) {
-                
-            });
             
             socket.on('session', function(session) {
                 setCookie('taka-sessionid', session._id);
@@ -324,4 +321,4 @@ var taka = taka || function(settings) {
     };
 
     return new Chat();
-}
+};
