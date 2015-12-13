@@ -1,17 +1,26 @@
 'use strict';
 
+
 var config = require('./config.js'),
-    io = require('socket.io').listen(config.port, { path: '/chat' });
+    io = require('socket.io').listen(config.port, { path: '/chat' }),
+    mongoose = require('mongoose');
 
-var mongoose = require('mongoose');
-mongoose.connect(config.mongodb.dbURI());
 
-var Models = require('./models');
+var dbURI = config.mongodb.dbURI();
 
-var Middleware = require('./middleware')(io);
 
-io.use(Middleware.SessionHandler);
-io.use(Middleware.Permissions);
-io.use(Middleware.BanManager);
-io.use(Middleware.Channels);
-io.use(Middleware.SocketEvents);
+mongoose.connect(dbURI);
+
+
+mongoose.connection.on('connected', function() {
+    var Models = require('./models'),
+        Middleware = require('./middleware')(io);
+
+
+    io.use(Middleware.Permissions);
+    io.use(Middleware.Authorization);
+    io.use(Middleware.SocketEvents);
+
+
+    console.log('Server now listening on port ' + config.port + '.');
+});

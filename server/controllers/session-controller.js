@@ -64,4 +64,16 @@ exports.start = function(session_id, callback) {
     };
 
     return updateSession(query, update, options, callback);
-}
+};
+
+
+/**
+ * Generates a guest name from the provided session id.
+ * @param {string} session_id - A session id.
+ * @returns {string} - A guest name generated from the socket session object.
+ * @readonly
+ */
+exports.guestName = function(session_id) {
+    var value = parseInt(session_id.slice(-5), 16) % 100000;
+    return 'Guest' + value;
+};

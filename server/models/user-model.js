@@ -13,7 +13,7 @@ var mongoose = require('mongoose');
  * @property {string} role     - This user's role.
  * @readonly
  */
- var userSchema = {
+ var userSchemaFields = {
     username: {
         maxlength: 32,
         required: true,
@@ -55,4 +55,7 @@ var schemaOptions = {
 };
 
 
-module.exports = mongoose.model('User', new mongoose.Schema(userSchema, schemaOptions));
+var userSchema = new mongoose.Schema(userSchemaFields, schemaOptions);
+
+
+module.exports = mongoose.model('User', userSchema);

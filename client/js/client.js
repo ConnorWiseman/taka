@@ -2,6 +2,8 @@
 
 
 var taka = taka || function(settings) {
+
+
     /**
      * Obtains a reference to the currently executing script instance.
      * @returns {Object} - An HTMLElement object.
@@ -287,6 +289,19 @@ var taka = taka || function(settings) {
 
 
     /**
+     * 
+     * @namespace
+     * @readonly
+     */
+    var SocketEvents = {
+        sessionStart: function(data) {
+            setCookie('taka-sessionid', data.id);
+            console.log(data);
+        }
+    };
+
+
+    /**
      * Creates an embeddable chat object.
      * @class
      * @classdesc An embeddable chat object.
@@ -319,10 +334,7 @@ var taka = taka || function(settings) {
             replaceScript(container);
 
 
-            socket.on('session', function(session) {
-                setCookie('taka-sessionid', session._id);
-                console.log(session);
-            });
+            socket.on('sessionStart', SocketEvents.sessionStart);
         });
     };
 

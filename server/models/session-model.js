@@ -12,7 +12,7 @@ var mongoose = require('mongoose'),
  * @property {Object} expires - A date object representing an expiration date. 
  * @readonly
  */
-var sessionSchema = {
+var sessionSchemaFields = {
     _id: {
         default: uuid.v4,
         required: true,
@@ -46,4 +46,7 @@ var schemaOptions = {
 };
 
 
-module.exports = mongoose.model('Session', new mongoose.Schema(sessionSchema, schemaOptions));
+var sessionSchema = new mongoose.Schema(sessionSchemaFields, schemaOptions);
+
+
+module.exports = mongoose.model('Session', sessionSchema);
