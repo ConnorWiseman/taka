@@ -4,6 +4,8 @@
 /**
  * @namespace
  * @property {number} port             - The port number to listen on for incoming Socket.IO connections.
+ * @property {Object} options          - An object of Socket.IO connection options.
+ * @property {string} options.path     - The path to serve incoming websocket connections on.
  * @property {Object} mongodb          - An object of MongoDB connection properties.
  * @property {string} mongodb.user     - The MongoDB user.
  * @property {string} mongodb.pass     - The MongoDB password.
@@ -14,6 +16,9 @@
  */
 var config = module.exports = {
     port: 1024,
+    options: {
+        path: '/chat'
+    },
     mongodb: {
         user: undefined,
         pass: undefined,

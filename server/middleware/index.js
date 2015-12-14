@@ -1,6 +1,12 @@
 'use strict';
 
 
+/**
+ * Requires various middleware files and returns them as properties of an object.
+ * 
+ * @param io - The global Socket.IO server object.
+ * @readonly
+ */
 module.exports = function(io) {
 
 
@@ -8,7 +14,6 @@ module.exports = function(io) {
      * @namespace
      * @property {Object} Permissions   - Permission middleware.
      * @property {Object} Authorization - Authorization middleware.
-     * @property {Object} Channels      - Channel middleware.
      * @property {Object} SocketEvents  - Socket event middleware.
      * @readonly
      */
@@ -18,6 +23,6 @@ module.exports = function(io) {
         SocketEvents: require('./socket-events.js')(io)
     };
 
-    
+
     return Middleware;
 };

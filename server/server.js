@@ -2,7 +2,7 @@
 
 
 var config = require('./config.js'),
-    io = require('socket.io').listen(config.port, { path: '/chat' }),
+    io = require('socket.io').listen(config.port, config.options),
     mongoose = require('mongoose');
 
 

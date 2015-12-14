@@ -25,16 +25,15 @@ exports.getFrom = function(request) {
  * @readonly
  */
 exports.toInt = function(address) {
-    // IPv6 shenanigans here.
-    var parts = address.split('.'),
-        res = 0;
+    var octets = address.split('.'),
+        result = 0;
 
-    res += (parseInt(parts[0], 10) << 24) >>> 0;
-    res += (parseInt(parts[1], 10) << 16) >>> 0;
-    res += (parseInt(parts[2], 10) << 8) >>> 0;
-    res += parseInt(parts[3], 10) >>> 0;
+    result += (Number(octets[0], 10) << 24) >>> 0;
+    result += (Number(octets[1], 10) << 16) >>> 0;
+    result += (Number(octets[2], 10) << 8) >>> 0;
+    result += Number(octets[3], 10) >>> 0;
 
-    return res;
+    return result;
 };
 
 
@@ -45,12 +44,12 @@ exports.toInt = function(address) {
  * @readonly
  */
 exports.fromInt = function(number) {
-    var part1 = number & 255;
-    var part2 = ((number >> 8) & 255);
-    var part3 = ((number >> 16) & 255);
-    var part4 = ((number >> 24) & 255);
+    var octet1 = ((number >> 24) & 255),
+        octet2 = ((number >> 16) & 255),
+        octet3 = ((number >> 8) & 255),
+        octet4 = (number & 255);
 
-    return (part4 + '.' + part3 + '.' + part2 + '.' + part1);
+    return (octet1 + '.' + octet2 + '.' + octet3 + '.' + octet4);
 };
 
 

@@ -289,13 +289,14 @@ var taka = taka || function(settings) {
 
 
     /**
-     * 
+     * Socket event functions wrapper.
      * @namespace
+     * @property sessionStart - Incoming session data from the server.
      * @readonly
      */
     var SocketEvents = {
         sessionStart: function(data) {
-            setCookie('taka-sessionid', data.id);
+            setCookie('taka-session_id', data.id);
             console.log(data);
         }
     };
@@ -309,7 +310,7 @@ var taka = taka || function(settings) {
      */
     var Chat = function() {
         settings.path = '/chat';
-        settings.query = 'taka-sessionid=' + getCookie('taka-sessionid');
+        settings.query = 'session_id=' + getCookie('taka-session_id');
         settings.currentScript = getCurrentScript();
 
 
@@ -325,7 +326,7 @@ var taka = taka || function(settings) {
 
 
         injectDependencies(function() {
-            var socket = io.connect('http://127.0.0.1/', {
+            var socket = io('http://127.0.0.1/', {
                 path: settings.path,
                 query: settings.query
             });
