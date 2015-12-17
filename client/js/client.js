@@ -25,13 +25,13 @@ var taka = taka || function(settings) {
      * @param {Object} newChild - An Element or HTMLElement object.
      * @readonly
      */
-    var replaceScript = function(newChild) {
-        var parentElement = settings.currentScript.parentElement;
-        if (newChild instanceof Element) {
-            parentElement.replaceChild(newChild.HTMLElement, settings.currentScript);
+    var replaceScript = function(scriptElement, childToReplace) {
+        var parentElement = scriptElement.parentElement;
+        if (childToReplace instanceof Element) {
+            parentElement.replaceChild(childToReplace.HTMLElement, scriptElement);
         }
         else {
-            parentElement.replaceChild(newChild, settings.currentScript);
+            parentElement.replaceChild(childToReplace, scriptElement);
         }
     };
 
@@ -309,6 +309,8 @@ var taka = taka || function(settings) {
      * @readonly
      */
     var Chat = function() {
+        settings.protocol = 'http://';
+        settings.host = '127.0.0.1';
         settings.path = '/chat';
         settings.query = 'session_id=' + getCookie('taka-session_id');
         settings.currentScript = getCurrentScript();
@@ -326,16 +328,19 @@ var taka = taka || function(settings) {
 
 
         injectDependencies(function() {
-            var socket = io('http://127.0.0.1/', {
+            var socket = io(settings.protocol + settings.host, {
                 path: settings.path,
                 query: settings.query
             });
 
 
-            replaceScript(container);
+            replaceScript(settings.currentScript, container);
 
 
             socket.on('sessionStart', SocketEvents.sessionStart);
+            socket.on('loadMessages', function(data) {
+                console.log(data);
+            });
         });
     };
 

@@ -52,5 +52,6 @@ var config = module.exports = {
 
             return dbURI;
         }
-    }
+    },
+    messageLimit: 10
 };

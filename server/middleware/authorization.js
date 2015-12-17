@@ -32,7 +32,6 @@ module.exports = function(socket, next) {
     socket.session = {
         id:             session_id,
         ip_address:     ip_address,
-        message_offset: 0,
         role:           'guest'
     };
 
@@ -60,56 +59,21 @@ module.exports = function(socket, next) {
      */
     var denyIncomingSocket = function() {
         // client is banned
-        return next();
+        return;
     };
 
 
-    /**
-     * Joins the socket to all necessary rooms.
-     * @readonly
-     */
-    var joinRooms = function() {
-        socket.join(socket.session.username);
-        if (socket.isStaff()) {
-            socket.join('staff');
-        }
-        else {
-            socket.join('public');
-        }
-    };
-
-
-    /**
-     * Emits session data to the connecting socket.
-     * @readonly
-     */
-    var emitSessionData = function() {
-
-
-        /**
-         * Publicly exposed session data.
-         * @namespace
-         * @property id       - The session id.
-         * @property role     - The user role used by the session.
-         * @property username - The username associated with the session.
-         * @readonly
-         */
-        var sessionData = {
-            id:       socket.session.id,
-            role:     socket.session.role,
-            username: socket.session.username
-        };
-        socket.emit('sessionStart', sessionData);
-    };
-
-
+    // Start the session.
     Session.start(session_id, function(error, result) {
         if (error) {
             return next(error);
         }
+
+        // Update the local session values.
         updateLocalSession(result);
 
 
+        // Check to see if the connecting user is banned.
         Ban.check(socket, function(error, result) {
             if (error) {
                 return next(error);
@@ -119,10 +83,6 @@ module.exports = function(socket, next) {
             if (result !== null) {
                 return denyIncomingSocket();
             }
-
-
-            joinRooms();
-            emitSessionData();
 
 
             return next();
