@@ -76,6 +76,46 @@ var taka = taka || function(settings) {
 
 
     /**
+     * Formats a date in a user-readable format.
+     * @param {Object} date - A date object to format.
+     * @readonly
+     */
+    var formatDate = function(date) {
+        var newDate = new Date(date),
+            newDateString = '';
+
+        var monthNames = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
+
+        var day = newDate.getDate();
+        var monthIndex = newDate.getMonth();
+        var hours = newDate.getHours();
+        var minutes = newDate.getMinutes();
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        var ampm = hours >= 12 ? ' PM' : ' AM';
+        
+        newDateString = monthNames[monthIndex] + ' ' + day + ', ' +  hours + ':' + minutes + ampm;
+
+        return newDateString;
+    };
+
+
+    /**
+     * Converts an integer to an IPv4 address string.
+     * @param {number} number - An IPv4 address in numeric form.
+     * @returns {string} - An IPv4 address in string form.
+     * @readonly
+     */
+    var addressFromInt = function(number) {
+        var octet1 = ((number >> 24) & 255),
+            octet2 = ((number >> 16) & 255),
+            octet3 = ((number >> 8) & 255),
+            octet4 = (number & 255);
+
+        return (octet1 + '.' + octet2 + '.' + octet3 + '.' + octet4);
+    };
+
+
+    /**
      * A callback without arguments.
      * @callback argumentlessCallback
      */
@@ -249,6 +289,19 @@ var taka = taka || function(settings) {
 
 
         /**
+         * Adds all the specified data attributes to the element.
+         * @param {Object} attributes - An object of attributes in key-value pairs.
+         * @returns {Object} - Chatbox.prototype.Element
+         */
+        this.data = function(data) {
+            for (var item in data) {
+                this.HTMLElement.dataset[item] = data[item];
+            }
+            return this;
+        };
+
+
+        /**
          * Adds all the specified styles to the element.
          * @param {Object} styles - An object of styles in key-value pairs.
          * @returns {this}
@@ -289,20 +342,6 @@ var taka = taka || function(settings) {
 
 
     /**
-     * Socket event functions wrapper.
-     * @namespace
-     * @property sessionStart - Incoming session data from the server.
-     * @readonly
-     */
-    var SocketEvents = {
-        sessionStart: function(data) {
-            setCookie('taka-session_id', data.id);
-            console.log(data);
-        }
-    };
-
-
-    /**
      * Creates an embeddable chat object.
      * @class
      * @classdesc An embeddable chat object.
@@ -313,18 +352,40 @@ var taka = taka || function(settings) {
         settings.host = '127.0.0.1';
         settings.path = '/chat';
         settings.query = 'session_id=' + getCookie('taka-session_id');
+
+
         settings.currentScript = getCurrentScript();
 
 
-        var container = new Element('div');
-        container.setAttributes({
-            id: 'taka'
+        settings.activeTab = false;
+
+
+        /**
+         * Toggles the value of settings.activeTab.
+         * @readonly
+         */
+        var toggleActiveTab = function() {
+            settings.activeTab = !settings.activeTab;
+        };
+
+
+        document.addEventListener('focus', function(event) {
+            toggleActiveTab();
         });
-        container.setStyles({
-            width: settings.width + 'px',
-            height: settings.height + 'px'
+        document.addEventListener('blur', function(event) {
+            toggleActiveTab();
         });
-        container.appendText('container!');
+
+
+        if (typeof settings.defaultAvatar === 'undefined') {
+            settings.defaultAvatar = 'http://placehold.it/35x35.png';
+        }
+        if (typeof settings.audio === 'undefined') {
+            settings.audio = {
+                mp3: './audio/click.mp3',
+                ogg: './audio.click.ogg'
+            };
+        }
 
 
         injectDependencies(function() {
@@ -334,13 +395,313 @@ var taka = taka || function(settings) {
             });
 
 
+            var container = new Element('div');
+            container.setAttributes({
+                id: 'taka'
+            });
+            container.setStyles({
+                width: settings.width + 'px',
+                height: settings.height + 'px'
+            });
+
+
+            var notificationHandler = new Element('audio');
+            notificationHandler.setAttributes({
+                preload: 'auto',
+                volume: '1'
+            });
+            var mp3 = new Element('source');
+            mp3.setAttributes({
+                src: settings.audio.mp3,
+                type: 'audio/mpeg'
+            });
+            notificationHandler.append(mp3);
+            var ogg = new Element('source');
+            ogg.setAttributes({
+                src: settings.audio.ogg,
+                type: 'audio/ogg'
+            });
+            notificationHandler.append(ogg);
+            container.append(notificationHandler);
+
+
+            /**
+             * Plays an audio notification.
+             * @readonly
+             */
+            var notify = function() {
+                notificationHandler.HTMLElement.play();
+            };
+
+
+            var messageWrapper = new Element('div');
+            messageWrapper.setAttributes({
+                className: 'message-list-wrapper'
+            });
+            messageWrapper.setStyles({
+                height: (settings.height - 96) + 'px',
+                width: (settings.width - 16) + 'px'
+            });
+            messageWrapper.on('scroll', function(event) {
+                if (messageWrapper.HTMLElement.scrollTop === 0) {
+                    socket.emit('loadMessages');
+                }
+            });
+            var messageList = new Element('div');
+            messageList.setAttributes({
+                className: 'message-list'
+            });
+            messageWrapper.append(messageList);
+            container.append(messageWrapper);
+
+
+            /**
+             * Scrolls the message wrapper to the bottom.
+             * @param {boolean} atBottom      - Whether or not the message wrapper is scrolled to the bottom.
+             * @param {boolean} [forceScroll] - Whether or not to scroll to the bottom anyway. Optional.
+             */
+            var scrollMessages = function(atBottom, forceScroll) {
+                if (typeof forceScroll === 'undefined') {
+                    forceScroll = false;
+                }
+
+
+                if (atBottom || forceScroll) {
+                    messageWrapper.HTMLElement.scrollTop = messageWrapper.HTMLElement.scrollHeight;
+                }
+            };
+
+
+            /**
+             * Creates a message for insertion into the message list.
+             * @param {Object} data - A message JSON object.
+             * @returns {Object} - An HTMLObject with necessary attributes and content.
+             * @readonly
+             */
+            var createMessage = function(data) {
+                var message = new Element('div');
+                message.setAttributes({
+                    id: data._id,
+                    className: 'message'
+                });
+                message.data({
+                    author: (typeof data.author !== 'undefined') ? data.author.username : data.guestAuthor
+                });
+
+
+                message.append(createAvatar(data));
+                message.append(createInformation(data));
+                message.append(createAuthor(data));
+                message.append(createMessageContent(data));
+
+
+                return message;
+            };
+     
+
+            /**
+             * Creates an avatar for insertion into messages.
+             * @param {Object} data - A message JSON object.
+             * @returns {Object} - An HTMLObject with necessary attributes and content.
+             * @readonly
+             */
+            var createAvatar = function(data) {
+                var avatar = new Element('img'),
+                    avatarSrc;
+
+
+                if (typeof data.author !== 'undefined' && typeof data.author.avatar !== 'undefined') {
+                    avatarSrc = data.author.avatar;
+                }
+                else {
+                    avatarSrc = settings.defaultAvatar;
+                }
+
+
+                avatar.setAttributes({
+                    width: '35',
+                    height: '35',
+                    className: 'avatar',
+                    src: avatarSrc
+                });
+
+
+                return avatar;
+            };
+
+
+            /**
+             * Creates an avatar for insertion into messages.
+             * @param {Object} data - A message JSON object.
+             * @returns {Object} - An HTMLObject with necessary attributes and content.
+             * @readonly
+             */
+            var createInformation = function(data) {
+                var information = new Element('div');
+                information.setAttributes({
+                    className: 'information'
+                });
+                information.appendText(formatDate(data.date));
+
+
+                if (settings.role === 'admin' || settings.role === 'mod') {
+                    information.setAttributes({
+                        title: 'IP: ' + addressFromInt(data.ip_address)
+                    })
+                    var deleteLink = new Element('a');
+                    deleteLink.setAttributes({
+                        href: '#',
+                        className: 'delete-message fa fa-trash-o'
+                    });
+                    deleteLink.on('click', function(event) {
+                        event.preventDefault();
+                        socket.emit('deleteMessage', event.target.parentNode.parentNode.id);
+                    });
+
+
+                    information.append(deleteLink);
+                }
+
+
+                return information;
+            };
+
+
+            /**
+             * Creates an element to display the author's name and link.
+             * @param {Object} data - A message JSON object.
+             * @returns {Object} - An HTMLObject with necessary attributes and content.
+             * @readonly
+             */
+            var createAuthor = function(data) {
+                var authorElement = new Element('span');
+                authorElement.setAttributes({
+                    className: 'author'
+                })
+
+
+                if (typeof data.author !== 'undefined') {
+                    if (typeof data.author.link !== 'undefined') {
+                        authorElement.append(
+                            new Element('a')
+                            .setAttributes({
+                                href: data.author.link
+                            })
+                            .appendText(data.author.username)
+                        );
+                    } else {
+                        authorElement.appendText(data.author.username);
+                    }
+                } else {
+                    authorElement.appendText(data.guestAuthor);
+                }
+                authorElement.appendText(': ');
+
+
+                return authorElement;
+            };
+
+
+            /**
+             * Creates an element to display a message's content.
+             * @param {Object} data - A message JSON object.
+             * @returns {Object} - An HTMLObject with necessary attributes and content.
+             * @readonly
+             */
+            var createMessageContent = function(data) {
+                var messageContentElement = new Element('span');
+                messageContentElement.setAttributes({
+                    className: 'content'
+                });
+                messageContentElement.appendText(data.message);
+
+
+                return messageContentElement;
+            };
+
+
+            /**
+             * @param {Object}   data                   - A message object in JSON format.
+             * @param {boolean} [forceScroll]           - Whether or not to force scroll the message list. Optional.
+             * @param {argumentlessCallback} [callback] - A callback to execute. Optional.
+             * @readonly
+             */
+            var addMessage = function(data, forceScroll, callback) {
+                var atBottom = (messageWrapper.HTMLElement.scrollHeight - messageWrapper.HTMLElement.scrollTop) === messageWrapper.HTMLElement.clientHeight;
+
+
+                messageList.append(createMessage(data));
+                scrollMessages(atBottom, forceScroll);
+
+
+                if (callback && typeof(callback) === 'function') {
+                    return callback();
+                }
+            };
+
+
+            /**
+             * @param {Object}   data                   - A message object in JSON format.
+             * @param {argumentlessCallback} [callback] - A callback to execute. Optional.
+             * @readonly
+             */
+            var addMessageToTop = function(data, callback) {
+                var messageElement = createMessage(data);
+                var atBottom = (messageWrapper.HTMLElement.scrollHeight - messageWrapper.HTMLElement.scrollTop) === messageWrapper.HTMLElement.clientHeight;
+
+
+                messageList.prepend(messageElement);
+                messageWrapper.HTMLElement.scrollTop += messageElement.HTMLElement.clientHeight;
+
+
+                if (callback && typeof(callback) === 'function') {
+                    return callback();
+                }
+            };
+
+
+            /**
+             * Socket event functions wrapper.
+             * @namespace
+             * @method sessionStart    - Incoming session data from the server.
+             * @method initialMessages - Initial message data used to populate chat.
+             * @readonly
+             */
+            var SocketEvents = {
+
+
+                /**
+                 * @param data - Current session data in JSON format.
+                 * @readonly
+                 */
+                sessionStart: function(data) {
+                    setCookie('taka-session_id', data.id);
+                    settings.role = data.role;
+                    console.log(data);
+                },
+
+
+                /**
+                 * @param data - An array of message JSON objects.
+                 * @readonly
+                 */
+                initialMessages: function(data) {
+                    console.log(data);
+                },
+
+                message: function(data) {
+                    addMessage(data);
+                    notify();
+                }
+            };
+
+
             replaceScript(settings.currentScript, container);
 
 
             socket.on('sessionStart', SocketEvents.sessionStart);
-            socket.on('loadMessages', function(data) {
-                console.log(data);
-            });
+            socket.on('initialMessages', SocketEvents.initialMessages);
+            socket.on('message', SocketEvents.message);
         });
     };
 

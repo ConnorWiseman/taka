@@ -17,22 +17,24 @@ module.exports = function(socket, next) {
     /**
      * Publicly exposed session data.
      * @namespace
+     * @property channel  - The current channel.
      * @property id       - The session id.
      * @property role     - The user role used by the session.
      * @property username - The username associated with the session.
      * @readonly
      */
     var sessionData = {
-        id:       socket.session.id,
-        role:     socket.session.role,
-        username: socket.session.username
+        'channel':  socket.session.channel,
+        'id':       socket.session.id,
+        'role':     socket.session.role,
+        'username': socket.session.username
     };
     socket.emit('sessionStart', sessionData);
 
 
     Message.fetchInitial(socket, function(error, result) {
         if (result.length !== 0) {
-            socket.emit('loadMessages', result);
+            socket.emit('initialMessages', result);
         }
 
 

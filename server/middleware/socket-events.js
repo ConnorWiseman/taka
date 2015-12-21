@@ -18,6 +18,30 @@ module.exports = function(io) {
      * @readonly
      */
     return function(socket, next) {
+        socket.on('deleteMessage', function(data) {
+            console.log(data);
+        });
+
+
+        socket.on('loadMessages', function() {
+            // send messages to client
+        });
+
+
+        for (var i = 0; i <= 15; i++) {
+            socket.emit('message', {
+                _id: i,
+                message: i,
+                date: new Date(),
+                author: {
+                    username: 'TestAuthor',
+                    link: 'http://google.com/'
+                },
+                guestAuthor: 'Testguest'
+            });
+        };
+
+
         return next();
     };
 };

@@ -3,55 +3,70 @@
 
 /**
  * @namespace
- * @property {number} port             - The port number to listen on for incoming Socket.IO connections.
- * @property {Object} options          - An object of Socket.IO connection options.
- * @property {string} options.path     - The path to serve incoming websocket connections on.
- * @property {Object} mongodb          - An object of MongoDB connection properties.
- * @property {string} mongodb.user     - The MongoDB user.
- * @property {string} mongodb.pass     - The MongoDB password.
- * @property {string} mongodb.host     - The MongoDB host.
- * @property {number} mongodb.port     - The MongoDB port.
- * @property {string} mongodb.database - The MongoDB database.
- * @function          mongodb.dbURI    - A utility function that returns a MongoDB connection URI.
+ * @property {Object} io  - Socket.IO connection settings.
+ * @property {Object} db  - MongoDB connection settings.
+ * @property {Object} app - Application-specific settings.
  */
-var config = module.exports = {
+var config = {};
+
+
+/**
+ * @namespace
+ * @property {number} port    - The port to listen for incoming websocket connections on.
+ * @property {Object} options - An object of Socket.IO connection options.
+ */
+config.io = {
     port: 1024,
     options: {
         path: '/chat'
-    },
-    mongodb: {
-        user: undefined,
-        pass: undefined,
-        host: '127.0.0.1',
-        port: 27017,
-        database: undefined,
-        dbURI: function() {
-            var dbURI = 'mongodb://';
+    }
+};
 
 
-            if (typeof this.user !== 'undefined' && this.user !== null) {
-                dbURI += this.user + ':' + this.pass + '@';
-            }
+/**
+ * @namespace
+ * @property {string} [user]     - The MongoDB user.
+ * @property {string} [pass]     - The MongoDB password.
+ * @property {string} host       - The MongoDB host.
+ * @property {number} port       - The MongoDB port.
+ * @property {string} [database] - The MongoDB database.
+ * @property {string} URI        - A MongoDB connection URI.
+ */
+config.db = {
+    user: undefined,
+    pass: undefined,
+    host: '127.0.0.1',
+    port: 27017,
+    database: 'taka',
+    URI: null
+};
 
 
-            dbURI += this.host;
+// Set the connection URI.
+config.db.URI = (function(db) {
+    var dbURI = 'mongodb://';
+    if (typeof db.user !== 'undefined' && db.user !== null) {
+        dbURI += db.user + ':' + db.pass + '@';
+    }
+    dbURI += db.host;
+    if (typeof db.port !== 'undefined' && db.port !== null) {
+        dbURI += ':' + db.port;
+    }
+    dbURI += '/';
+    if (typeof db.database !== 'undefined' && db.database !== null) {
+        dbURI += db.database;
+    }
+    return dbURI;
+}(config.db));
 
 
-            if (typeof this.port !== 'undefined' && this.port !== null) {
-                dbURI += ':' + this.port;
-            }
-
-
-            dbURI += '/';
-
-
-            if (typeof this.database !== 'undefined' && this.database !== null) {
-                dbURI += this.database;
-            }
-
-
-            return dbURI;
-        }
-    },
+/**
+ * @namespace
+ * @property {number} messageLimit - The number of messages to load from the database when populating chat history.
+ */
+config.app = {
     messageLimit: 10
 };
+
+
+module.exports = config;

@@ -11,16 +11,16 @@
  */
 var permissions = {
     guest: {
-
+        loadMessages: true
     },
     user: {
 
     },
     mod: {
-
+        deleteMessage: true
     },
     admin: {
-
+        deleteMessage: true
     }
 };
 
@@ -48,16 +48,6 @@ module.exports = function(socket, next) {
             return (permissions[this.session.role][action] === true);
         }
         return false;
-    };
-
-
-    /**
-     * Determines whether a socket is authorized to access staff functionality.
-     * @returns {boolean} - Whether the socket belongs to a staff group.
-     * @readonly
-     */
-    socket.isStaff = function() {
-        return (socket.session.role === 'admin' || socket.session.role === 'mod');
     };
 
 

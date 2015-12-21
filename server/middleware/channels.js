@@ -10,11 +10,15 @@
  */
 module.exports = function(socket, next) {
     socket.join(socket.session.username);
-    if (socket.isStaff()) {
+
+
+    if (socket.can('deleteMessage')) {
         socket.join('staff');
     }
     else {
         socket.join('public');
     }
+
+
     return next();
 };

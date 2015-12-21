@@ -14,7 +14,7 @@ module.exports = function(io) {
      * @namespace
      * @property {Object} Permissions   - Permission middleware.
      * @property {Object} Authorization - Authorization middleware.
-     * @property {Object} Rooms - Channel joining middleware.
+     * @property {Object} Channels - Channel joining middleware.
      * @property {Object} InitialEmit - Connection emit middleware.
      * @property {Object} SocketEvents  - Socket event middleware.
      * @readonly
@@ -22,7 +22,7 @@ module.exports = function(io) {
     var Middleware = {
         Permissions: require('./permissions.js'),
         Authorization: require('./authorization.js'),
-        Rooms: require('./rooms.js'),
+        Channels: require('./channels.js'),
         InitialEmit: require('./initial-emit.js'),
         SocketEvents: require('./socket-events.js')(io)
     };

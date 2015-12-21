@@ -31,7 +31,7 @@ var fetchMessages = function(query, socket, callback) {
         _id: 'descending'
     });
     query.populate('author', '-password');
-    query.limit(config.messageLimit);
+    query.limit(config.app.messageLimit);
 
 
     query.exec(function(error, result) {

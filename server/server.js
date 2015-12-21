@@ -2,14 +2,11 @@
 
 
 var config = require('./config.js'),
-    io = require('socket.io').listen(config.port, config.options),
+    io = require('socket.io').listen(config.io.port, config.io.options),
     mongoose = require('mongoose');
 
 
-var dbURI = config.mongodb.dbURI();
-
-
-mongoose.connect(dbURI);
+mongoose.connect(config.db.URI);
 
 
 mongoose.connection.on('connected', function() {
@@ -19,10 +16,10 @@ mongoose.connection.on('connected', function() {
 
     io.use(Middleware.Permissions);
     io.use(Middleware.Authorization);
-    io.use(Middleware.Rooms);
+    io.use(Middleware.Channels);
     io.use(Middleware.InitialEmit);
     io.use(Middleware.SocketEvents);
 
 
-    console.log('Server now listening on port ' + config.port + '.');
+    console.log('Server now listening on port ' + config.io.port + '.');
 });
