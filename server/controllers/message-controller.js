@@ -22,7 +22,7 @@ var MessageModel = mongoose.model('Message');
  * @readonly
  */
 var fetchMessages = function(query, socket, callback) {
-    if (socket.isStaff()) {
+    if (socket.can('deleteMessage')) {
         query.select('-ip');
     }
 

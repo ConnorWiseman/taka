@@ -275,12 +275,25 @@ var taka = taka || function(settings) {
 
 
         /**
+         * Adds the specified attribute to the element.
+         * @param {string} attribute - An attribute to set.
+         * @param {string} value     - The value to set.
+         * @returns {this}
+         * @readonly
+         */
+        this.attribute = function(attribute, value) {
+            this.HTMLElement[String(attribute)] = String(value);
+            return this;
+        };
+
+
+        /**
          * Adds all the specified attributes to the element.
          * @param {Object} attributes - An object of attributes in key-value pairs.
          * @returns {this}
          * @readonly
          */
-        this.setAttributes = function(attributes) {
+        this.attributes = function(attributes) {
             for (var attribute in attributes) {
                 this.HTMLElement[String(attribute)] = String(attributes[attribute]);
             }
@@ -289,14 +302,13 @@ var taka = taka || function(settings) {
 
 
         /**
-         * Adds all the specified data attributes to the element.
-         * @param {Object} attributes - An object of attributes in key-value pairs.
+         * Adds the specified data value to the element.
+         * @param {string} key   - A data attribute to set.
+         * @param {string} value - The value to set.
          * @returns {Object} - Chatbox.prototype.Element
          */
-        this.data = function(data) {
-            for (var item in data) {
-                this.HTMLElement.dataset[item] = data[item];
-            }
+        this.data = function(key, value) {
+            this.HTMLElement.dataset[String(key)] = String(value);
             return this;
         };
 
@@ -307,10 +319,22 @@ var taka = taka || function(settings) {
          * @returns {this}
          * @readonly
          */
-        this.setStyles = function(styles) {
+        this.css = function(styles) {
             for (var rule in styles) {
                 this.HTMLElement.style[String(rule)] = String(styles[rule]);
             }
+            return this;
+        };
+
+
+        /**
+         * Adds a class name to an existing object.
+         * @param {string} className - The name of the class to add.
+         * @returns {this}
+         * @readonly
+         */
+        this.addClass = function(className) {
+            this.HTMLElement.classList.add(String(className));
             return this;
         };
 
@@ -396,28 +420,26 @@ var taka = taka || function(settings) {
 
 
             var container = new Element('div');
-            container.setAttributes({
-                id: 'taka'
-            });
-            container.setStyles({
+            container.attribute('id', 'taka');
+            container.css({
                 width: settings.width + 'px',
                 height: settings.height + 'px'
             });
 
 
             var notificationHandler = new Element('audio');
-            notificationHandler.setAttributes({
+            notificationHandler.attributes({
                 preload: 'auto',
                 volume: '1'
             });
             var mp3 = new Element('source');
-            mp3.setAttributes({
+            mp3.attributes({
                 src: settings.audio.mp3,
                 type: 'audio/mpeg'
             });
             notificationHandler.append(mp3);
             var ogg = new Element('source');
-            ogg.setAttributes({
+            ogg.attributes({
                 src: settings.audio.ogg,
                 type: 'audio/ogg'
             });
@@ -435,10 +457,8 @@ var taka = taka || function(settings) {
 
 
             var messageWrapper = new Element('div');
-            messageWrapper.setAttributes({
-                className: 'message-list-wrapper'
-            });
-            messageWrapper.setStyles({
+            messageWrapper.addClass('message-list-wrapper');
+            messageWrapper.css({
                 height: (settings.height - 96) + 'px',
                 width: (settings.width - 16) + 'px'
             });
@@ -448,9 +468,7 @@ var taka = taka || function(settings) {
                 }
             });
             var messageList = new Element('div');
-            messageList.setAttributes({
-                className: 'message-list'
-            });
+            messageList.addClass('message-list');
             messageWrapper.append(messageList);
             container.append(messageWrapper);
 
@@ -480,13 +498,18 @@ var taka = taka || function(settings) {
              */
             var createMessage = function(data) {
                 var message = new Element('div');
-                message.setAttributes({
-                    id: data._id,
-                    className: 'message'
-                });
-                message.data({
-                    author: (typeof data.author !== 'undefined') ? data.author.username : data.guestAuthor
-                });
+                message.addClass('message');
+                message.attribute('id', data._id);
+
+
+                var author;
+                if (typeof data.author !== 'undefined') {
+                    author = data.author.username;
+                }
+                else {
+                    author = data.guestAuthor;
+                }
+                message.data('author', author);
 
 
                 message.append(createAvatar(data));
@@ -518,10 +541,10 @@ var taka = taka || function(settings) {
                 }
 
 
-                avatar.setAttributes({
+                avatar.addClass('avatar');
+                avatar.attributes({
                     width: '35',
                     height: '35',
-                    className: 'avatar',
                     src: avatarSrc
                 });
 
@@ -538,21 +561,17 @@ var taka = taka || function(settings) {
              */
             var createInformation = function(data) {
                 var information = new Element('div');
-                information.setAttributes({
-                    className: 'information'
-                });
+                information.addClass('information');
                 information.appendText(formatDate(data.date));
 
 
                 if (settings.role === 'admin' || settings.role === 'mod') {
-                    information.setAttributes({
-                        title: 'IP: ' + addressFromInt(data.ip_address)
-                    })
+                    information.attribute('title', 'IP: ' + addressFromInt(data.ip_address));
                     var deleteLink = new Element('a');
-                    deleteLink.setAttributes({
-                        href: '#',
-                        className: 'delete-message fa fa-trash-o'
-                    });
+                    deleteLink.addClass('delete-message');
+                    deleteLink.addClass('fa');
+                    deleteLink.addClass('fa-trash-o');
+                    deleteLink.attribute('href', '#');
                     deleteLink.on('click', function(event) {
                         event.preventDefault();
                         socket.emit('deleteMessage', event.target.parentNode.parentNode.id);
@@ -575,24 +594,21 @@ var taka = taka || function(settings) {
              */
             var createAuthor = function(data) {
                 var authorElement = new Element('span');
-                authorElement.setAttributes({
-                    className: 'author'
-                })
+                authorElement.addClass('author');
 
 
                 if (typeof data.author !== 'undefined') {
-                    if (typeof data.author.link !== 'undefined') {
-                        authorElement.append(
-                            new Element('a')
-                            .setAttributes({
-                                href: data.author.link
-                            })
-                            .appendText(data.author.username)
-                        );
-                    } else {
+                    if (typeof data.author.link !== 'undefined' && data.author.link !== null) {
+                        var authorLink = new Element('a');
+                        authorLink.attribute('href', data.author.link);
+                        authorLink.appendText(data.author.username);
+                        authorElement.append(authorLink);
+                    }
+                    else {
                         authorElement.appendText(data.author.username);
                     }
-                } else {
+                }
+                else {
                     authorElement.appendText(data.guestAuthor);
                 }
                 authorElement.appendText(': ');
@@ -610,9 +626,7 @@ var taka = taka || function(settings) {
              */
             var createMessageContent = function(data) {
                 var messageContentElement = new Element('span');
-                messageContentElement.setAttributes({
-                    className: 'content'
-                });
+                messageContentElement.addClass('content');
                 messageContentElement.appendText(data.message);
 
 
