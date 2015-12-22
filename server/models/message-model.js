@@ -30,12 +30,12 @@ var mongoose = require('mongoose');
         required: true,
         type: Date
     },
-    content: {
+    message: {
         maxlength: 255,
         required: true,
         type: String
     },
-    ip: {
+    ip_address: {
         required: true,
         type: Number
     },

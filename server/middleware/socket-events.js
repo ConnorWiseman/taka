@@ -1,6 +1,9 @@
 'use strict';
 
 
+var Message = require('../controllers/message-controller.js');
+
+
 /**
  * Returns a middleware function for attaching event listeners to a socket.
  * 
@@ -23,23 +26,66 @@ module.exports = function(io) {
         });
 
 
-        socket.on('loadMessages', function() {
-            // send messages to client
+        /**
+         * Adds a new message to the database, then sends the message to all connected clients.
+         * @param {Object} message - A message JSON object.
+         * @readonly
+         */
+        socket.on('sendMessage', function(message) {
+            Message.add(socket.session, message, function(error, result) {
+                if (error) {
+                    console.log(error);
+                    return;
+                }
+
+
+                var publicMessage = {
+                    'message': result.message,
+                    'date': result.date,
+                    '_id': result._id
+                };
+
+                var staffMessage = {
+                    'message': result.message,
+                    'date': result.date,
+                    '_id': result._id,
+                    'ip_address': result.ip_address
+                };
+
+
+                if (typeof result.author !== 'undefined' && result.author !== null) {
+                    publicMessage.author = staffMessage.author = result.author;
+                }
+                else {
+                    publicMessage.author = staffMessage.author = {
+                        username: result.guestAuthor
+                    };
+                }
+
+
+                if (socket.can('viewIP')) {
+                    socket.emit('confirmMessage', staffMessage);
+                } else {
+                    socket.emit('confirmMessage', publicMessage);
+                }
+                socket.broadcast.to('public').emit('newMessage', publicMessage);
+                socket.broadcast.to('staff').emit('newMessage', staffMessage);
+            });
         });
 
 
-        for (var i = 0; i <= 15; i++) {
-            socket.emit('message', {
-                _id: i,
-                message: i,
-                date: new Date(),
-                author: {
-                    username: 'TestAuthor',
-                    link: 'http://google.com/'
-                },
-                guestAuthor: 'Testguest'
+        /**
+         * Loads additional messages offset by the specified id.
+         * @param {string} id - The id to fetch messages from.
+         * @readonly
+         */
+        socket.on('loadMessages', function(id) {
+            Message.fetchAdditional(socket, id, function(error, result) {
+                if (result.length !== 0) {
+                    socket.emit('additionalMessages', result);
+                }
             });
-        };
+        });
 
 
         return next();

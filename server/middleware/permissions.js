@@ -11,16 +11,21 @@
  */
 var permissions = {
     guest: {
-        loadMessages: true
+        loadMessages: true,
+        sendMessage: true
     },
     user: {
-
+        sendMessage: true,
     },
     mod: {
-        deleteMessage: true
+        deleteMessage: true,
+        sendMessage: true,
+        viewIP: true
     },
     admin: {
-        deleteMessage: true
+        deleteMessage: true,
+        sendMessage: true,
+        viewIP: true
     }
 };
 

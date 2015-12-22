@@ -17,12 +17,10 @@
 
 #taka .message {
     clear: both;
-    min-height: 31px;
+    min-height: 39px;
     padding: 4px 4px 0 0;
     text-align: left;
-    font-size: 12px;
     word-wrap: break-word;
-    box-sizing: border-box;
 }
 
 #taka .avatar {
@@ -47,4 +45,14 @@
     display: inline-block;
     margin: 0 4px;
     text-decoration: none;
+}
+
+#taka textarea {
+    box-sizing: border-box;
+    font-family: sans-serif;
+    font-size: 12px;
+    height: 56px;
+    padding: 4px;
+    margin: 0;
+    resize: none;
 }

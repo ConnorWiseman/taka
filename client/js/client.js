@@ -281,7 +281,7 @@ var taka = taka || function(settings) {
          * @returns {this}
          * @readonly
          */
-        this.attribute = function(attribute, value) {
+        this.setAttribute = function(attribute, value) {
             this.HTMLElement[String(attribute)] = String(value);
             return this;
         };
@@ -293,10 +293,22 @@ var taka = taka || function(settings) {
          * @returns {this}
          * @readonly
          */
-        this.attributes = function(attributes) {
+        this.setAttributes = function(attributes) {
             for (var attribute in attributes) {
                 this.HTMLElement[String(attribute)] = String(attributes[attribute]);
             }
+            return this;
+        };
+
+
+        /**
+         * Removes the specified attribute from the element.
+         * @param {string} attribute - An attribute to remove.
+         * @returns {this}
+         * @readonly
+         */
+        this.removeAttribute = function(attribute) {
+            this.HTMLElement.removeAttribute(attribute);
             return this;
         };
 
@@ -420,7 +432,7 @@ var taka = taka || function(settings) {
 
 
             var container = new Element('div');
-            container.attribute('id', 'taka');
+            container.setAttribute('id', 'taka');
             container.css({
                 width: settings.width + 'px',
                 height: settings.height + 'px'
@@ -428,18 +440,18 @@ var taka = taka || function(settings) {
 
 
             var notificationHandler = new Element('audio');
-            notificationHandler.attributes({
+            notificationHandler.setAttributes({
                 preload: 'auto',
                 volume: '1'
             });
             var mp3 = new Element('source');
-            mp3.attributes({
+            mp3.setAttributes({
                 src: settings.audio.mp3,
                 type: 'audio/mpeg'
             });
             notificationHandler.append(mp3);
             var ogg = new Element('source');
-            ogg.attributes({
+            ogg.setAttributes({
                 src: settings.audio.ogg,
                 type: 'audio/ogg'
             });
@@ -464,7 +476,7 @@ var taka = taka || function(settings) {
             });
             messageWrapper.on('scroll', function(event) {
                 if (messageWrapper.HTMLElement.scrollTop === 0) {
-                    socket.emit('loadMessages');
+                    socket.emit('loadMessages', messageList.HTMLElement.firstElementChild.id);
                 }
             });
             var messageList = new Element('div');
@@ -499,7 +511,7 @@ var taka = taka || function(settings) {
             var createMessage = function(data) {
                 var message = new Element('div');
                 message.addClass('message');
-                message.attribute('id', data._id);
+                message.setAttribute('id', data._id);
 
 
                 var author;
@@ -542,7 +554,7 @@ var taka = taka || function(settings) {
 
 
                 avatar.addClass('avatar');
-                avatar.attributes({
+                avatar.setAttributes({
                     width: '35',
                     height: '35',
                     src: avatarSrc
@@ -566,12 +578,12 @@ var taka = taka || function(settings) {
 
 
                 if (settings.role === 'admin' || settings.role === 'mod') {
-                    information.attribute('title', 'IP: ' + addressFromInt(data.ip_address));
+                    information.setAttribute('title', 'IP: ' + addressFromInt(data.ip_address));
                     var deleteLink = new Element('a');
                     deleteLink.addClass('delete-message');
                     deleteLink.addClass('fa');
                     deleteLink.addClass('fa-trash-o');
-                    deleteLink.attribute('href', '#');
+                    deleteLink.setAttribute('href', '#');
                     deleteLink.on('click', function(event) {
                         event.preventDefault();
                         socket.emit('deleteMessage', event.target.parentNode.parentNode.id);
@@ -600,7 +612,7 @@ var taka = taka || function(settings) {
                 if (typeof data.author !== 'undefined') {
                     if (typeof data.author.link !== 'undefined' && data.author.link !== null) {
                         var authorLink = new Element('a');
-                        authorLink.attribute('href', data.author.link);
+                        authorLink.setAttribute('href', data.author.link);
                         authorLink.appendText(data.author.username);
                         authorElement.append(authorLink);
                     }
@@ -674,6 +686,68 @@ var taka = taka || function(settings) {
             };
 
 
+            var chatForm = new Element('form');
+            chatForm.css({
+                display: 'block',
+                margin: '0 8px 4px'
+            });
+            container.append(chatForm);
+            var chatTextarea = new Element('textarea');
+            chatTextarea.setAttributes({
+                'placeholder': 'Type your message here...',
+                'disabled': 'true'
+            });
+            chatTextarea.css({
+                'width': (settings.width - 16) + 'px'
+            });
+            chatForm.append(chatTextarea);
+
+
+            var chatFormSubmit = new Event('submit', {
+                bubbles: true,
+                cancelable: true
+            });
+
+
+            /**
+             * Determines whether the key associated with a keypress event is the enter key.
+             * @param {Object} event - A keypress event.
+             * @returns {boolean} - Whether or not the pressed key is a match for the enter key.
+             * @readonly
+             */
+            var isSubmitKey = function(event) {
+                return (event.key === 'Enter' || event.keyCode === 13);
+            };
+
+
+            chatTextarea.on('keyup', function(event) {
+                if (isSubmitKey(event)) {
+                   chatForm.HTMLElement.dispatchEvent(chatFormSubmit);
+                }
+            });
+            chatTextarea.on('keydown', function(event) {
+                if (isSubmitKey(event)) {
+                   event.preventDefault();
+                }
+            });
+
+
+            var enableTextarea = function() {
+                chatTextarea.removeAttribute('disabled');
+            };
+            var disableTextarea = function() {
+                chatTextarea.setAttribute('disabled', 'true');
+            };
+            var resetTextarea = function() {
+                chatTextarea.HTMLElement.value = '';
+            };
+            chatForm.on('submit', function(event) {
+                event.preventDefault();
+                disableTextarea();
+                socket.emit('sendMessage', chatTextarea.HTMLElement.value);
+            });
+
+
             /**
              * Socket event functions wrapper.
              * @namespace
@@ -692,6 +766,7 @@ var taka = taka || function(settings) {
                     setCookie('taka-session_id', data.id);
                     settings.role = data.role;
                     console.log(data);
+                    enableTextarea();
                 },
 
 
@@ -700,12 +775,32 @@ var taka = taka || function(settings) {
                  * @readonly
                  */
                 initialMessages: function(data) {
-                    console.log(data);
+                    data = data.reverse();
+                    for (var i = 0, numMessages = data.length; i < numMessages; i++) {
+                        addMessage(data[i]);
+                    }
                 },
 
-                message: function(data) {
+
+                /**
+                 * @param data - An array of message JSON objects.
+                 * @readonly
+                 */
+                additionalMessages: function(data) {
+                    for (var i = 0, numMessages = data.length; i < numMessages; i++) {
+                        addMessageToTop(data[i]);
+                    }
+                },
+
+                newMessage: function(data) {
                     addMessage(data);
                     notify();
+                },
+                confirmMessage: function(data) {
+                    addMessage(data);
+                    scrollMessages(null, true);
+                    enableTextarea();
+                    resetTextarea();
                 }
             };
 
@@ -715,7 +810,9 @@ var taka = taka || function(settings) {
 
             socket.on('sessionStart', SocketEvents.sessionStart);
             socket.on('initialMessages', SocketEvents.initialMessages);
-            socket.on('message', SocketEvents.message);
+            socket.on('additionalMessages', SocketEvents.additionalMessages);
+            socket.on('newMessage', SocketEvents.newMessage);
+            socket.on('confirmMessage', SocketEvents.confirmMessage);
         });
     };
 

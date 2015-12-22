@@ -2,7 +2,8 @@
 
 
 var mongoose = require('mongoose'),
-    config = require('../config.js');
+    config = require('../config.js'),
+    address = require('../utilities/ip-address.js');
 
 
 var MessageModel = mongoose.model('Message');
@@ -12,6 +13,47 @@ var MessageModel = mongoose.model('Message');
  * A traditional Node.js "errorback" function.
  * @callback nodeCallback
  */
+ 
+ 
+/**
+ * Adds a new message to the database, then executes a given callback with the
+ * new message information.
+ * @param {Object} session          - The local socket session object.
+ * @param {string} message          - The message's contents.
+ * @param {nodeCallback} callback   - A callback function to execute.
+ * @readonly
+ */
+exports.add = function(session, message, callback) {
+    var newMessage = new MessageModel();
+
+
+    if (session.user_id) {
+        newMessage.author = session.user_id;
+    }
+    else {
+        newMessage.guestAuthor = session.username;
+    }
+    newMessage.message = message;
+    newMessage.ip_address = address.toInt(session.ip_address);
+    newMessage.channel = message.channel;
+
+
+    newMessage.save(function(error) {
+        if (error) {
+            return callback(error);
+        }
+
+
+        if (session.user_id) {
+            newMessage.populate('author', '-password', function(error) {
+                return callback(null, newMessage);
+            });
+        }
+
+
+        return callback(null, newMessage);
+    });
+};
 
 
 /**
@@ -22,8 +64,8 @@ var MessageModel = mongoose.model('Message');
  * @readonly
  */
 var fetchMessages = function(query, socket, callback) {
-    if (socket.can('deleteMessage')) {
-        query.select('-ip');
+    if (!socket.can('viewIP')) {
+        query.select('-ip_address');
     }
 
 
@@ -68,7 +110,7 @@ exports.fetchInitial = function(socket, callback) {
 exports.fetchAdditional = function(socket, lastId, callback) {
     var query = MessageModel.find({$and: [
         { deleted: { $ne: true } },
-        { _id: { $gt: lastId } }
+        { _id: { $lt: lastId } }
     ]});
 
 
