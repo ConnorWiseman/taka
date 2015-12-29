@@ -25,7 +25,6 @@ module.exports = function(socket, next) {
      * @namespace
      * @property id             - The session id.
      * @property ip_address     - The IP address associated with the session.
-     * @property message_offset - 
      * @property role           - The user role used by the session.
      * @readonly
      */

@@ -2,6 +2,18 @@
 
 
 var taka = taka || function(settings) {
+    /**
+     * A cross-browser shim for window.requestAnimationFrame.
+     * @readonly
+     */
+    var requestAnimationFrame = (function(){
+        return  window.requestAnimationFrame ||
+                window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame    ||
+                function(callback) {
+                    window.setTimeout(callback, 1000 / 60);
+                };
+    })();
 
 
     /**
@@ -374,6 +386,48 @@ var taka = taka || function(settings) {
             this.HTMLElement.addEventListener(String(type), callback);
             return this;
         };
+
+
+        /**
+         * Animates scrolling on an element to a specified position.
+         * Uses this beautiful code snippet: http://stackoverflow.com/a/26808520/2301088
+         * @param {number} targetPosition - The position to scroll to.
+         * @param {number} speed          - The speed to animate the scrolling.
+         * @returns {this}
+         * @readonly
+         */
+        this.animateScrollTo = function(targetPosition, speed) {
+            var currentPosition = this.HTMLElement.scrollTop,
+                currentTime = 0;
+
+            var time = Math.max(0.5, Math.min(Math.abs(currentPosition - targetPosition) / speed, 1));
+
+
+            var easeOut = function(position) {
+                return Math.sin(position * (Math.PI / 2));
+            };
+
+
+            var animateScroll = function() {
+                currentTime += 1 / 60;
+
+                var p = currentTime / time;
+                var t = easeOut(p);
+
+                if (p < 1) {
+                    this.HTMLElement.scrollTop = currentPosition + ((targetPosition - currentPosition) * t);
+                    requestAnimationFrame(animateScroll);
+                }
+                else {
+                    console.log('done', Math.random());
+                    this.HTMLElement.scrollTop = targetPosition;
+                    return this;
+                }
+            }.bind(this);
+
+
+            animateScroll();
+        };
     };
 
 
@@ -422,6 +476,12 @@ var taka = taka || function(settings) {
                 ogg: './audio.click.ogg'
             };
         }
+        if (typeof settings.spacing === 'undefined') {
+            settings.spacing = 4;
+        }
+        if (typeof settings.animateMessages === 'undefined') {
+            settings.animateMessages = true;
+        }
 
 
         injectDependencies(function() {
@@ -434,8 +494,9 @@ var taka = taka || function(settings) {
             var container = new Element('div');
             container.setAttribute('id', 'taka');
             container.css({
-                width: settings.width + 'px',
-                height: settings.height + 'px'
+                'height': settings.height + 'px',
+                //'overflow': 'hidden',
+                'width': settings.width + 'px'
             });
 
 
@@ -471,8 +532,13 @@ var taka = taka || function(settings) {
             var messageWrapper = new Element('div');
             messageWrapper.addClass('message-list-wrapper');
             messageWrapper.css({
-                height: (settings.height - 96) + 'px',
-                width: (settings.width - 16) + 'px'
+                'display': 'inline-block',
+                'float': 'left',
+                'height': (settings.height - 96) + 'px',
+                'margin': (settings.spacing * 2) + 'px',
+                'overflow': 'auto',
+                'position': 'relative',
+                'width': (settings.width - (settings.spacing * 4)) + 'px'
             });
             messageWrapper.on('scroll', function(event) {
                 if (messageWrapper.HTMLElement.scrollTop === 0) {
@@ -481,6 +547,9 @@ var taka = taka || function(settings) {
             });
             var messageList = new Element('div');
             messageList.addClass('message-list');
+            messageList.css({
+                width: '100%'
+            });
             messageWrapper.append(messageList);
             container.append(messageWrapper);
 
@@ -489,15 +558,28 @@ var taka = taka || function(settings) {
              * Scrolls the message wrapper to the bottom.
              * @param {boolean} atBottom      - Whether or not the message wrapper is scrolled to the bottom.
              * @param {boolean} [forceScroll] - Whether or not to scroll to the bottom anyway. Optional.
+             * @param {boolean} [animate]     - Whether or not to animate the scrolling. Optional.
              */
-            var scrollMessages = function(atBottom, forceScroll) {
+            var scrollMessages = function(atBottom, forceScroll, animate) {
                 if (typeof forceScroll === 'undefined') {
                     forceScroll = false;
                 }
 
 
+                if (typeof animate === 'undefined') {
+                    animate = false;
+                }
+
+
                 if (atBottom || forceScroll) {
-                    messageWrapper.HTMLElement.scrollTop = messageWrapper.HTMLElement.scrollHeight;
+                    if (animate && settings.activeTab) {
+                        var targetPosition = messageWrapper.HTMLElement.scrollHeight;
+                        console.log(targetPosition);
+                        messageWrapper.animateScrollTo(targetPosition, 2);
+                    }
+                    else {
+                        messageWrapper.HTMLElement.scrollTop = messageWrapper.HTMLElement.scrollHeight;
+                    }
                 }
             };
 
@@ -512,6 +594,13 @@ var taka = taka || function(settings) {
                 var message = new Element('div');
                 message.addClass('message');
                 message.setAttribute('id', data._id);
+                message.css({
+                    'clear': 'both',
+                    'minHeight': (settings.spacing + 35) + 'px',
+                    'padding': settings.spacing + 'px ' + settings.spacing + 'px 0 0',
+                    'textAlign': 'left',
+                    'wordWrap': 'break-word'
+                });
 
 
                 var author;
@@ -559,6 +648,14 @@ var taka = taka || function(settings) {
                     height: '35',
                     src: avatarSrc
                 });
+                avatar.css({
+                    'float': 'left',
+                    'margin': '0 ' + settings.spacing + 'px ' + settings.spacing + 'px 0',
+                    'MozUserSelect': 'none',
+                    'webkitUserSelect': 'none',
+                    'msUserSelect': 'none',
+                    'userSelect': 'none'
+                });
 
 
                 return avatar;
@@ -574,6 +671,10 @@ var taka = taka || function(settings) {
             var createInformation = function(data) {
                 var information = new Element('div');
                 information.addClass('information');
+                information.css({
+                    'fontSize': '65%',
+                    'textAlign': 'right',
+                });
                 information.appendText(formatDate(data.date));
 
 
@@ -584,6 +685,11 @@ var taka = taka || function(settings) {
                     deleteLink.addClass('fa');
                     deleteLink.addClass('fa-trash-o');
                     deleteLink.setAttribute('href', '#');
+                    deleteLink.css({
+                        'display': 'inline-block',
+                        'margin': '0 ' + settings.spacing + 'px',
+                        'textDecoration': 'none'
+                    });
                     deleteLink.on('click', function(event) {
                         event.preventDefault();
                         socket.emit('deleteMessage', event.target.parentNode.parentNode.id);
@@ -652,12 +758,28 @@ var taka = taka || function(settings) {
              * @param {argumentlessCallback} [callback] - A callback to execute. Optional.
              * @readonly
              */
-            var addMessage = function(data, forceScroll, callback) {
+            var addMessage = function(data, callback) {
+                messageList.append(createMessage(data));
+
+
+                if (callback && typeof(callback) === 'function') {
+                    return callback();
+                }
+            };
+
+
+            /**
+             * @param {Object}   data                   - A message object in JSON format.
+             * @param {boolean} [forceScroll]           - Whether or not to force scroll the message list. Optional.
+             * @param {argumentlessCallback} [callback] - A callback to execute. Optional.
+             * @readonly
+             */
+            var addMessageAndScroll = function(data, forceScroll, callback) {
                 var atBottom = (messageWrapper.HTMLElement.scrollHeight - messageWrapper.HTMLElement.scrollTop) === messageWrapper.HTMLElement.clientHeight;
 
 
                 messageList.append(createMessage(data));
-                scrollMessages(atBottom, forceScroll);
+                scrollMessages(atBottom, forceScroll, settings.animateMessages);
 
 
                 if (callback && typeof(callback) === 'function') {
@@ -686,10 +808,42 @@ var taka = taka || function(settings) {
             };
 
 
+            var formWrapper = new Element('div');
+            formWrapper.addClass('form-wrapper');
+            formWrapper.css({
+                'backgroundColor': '#eaeaea',
+                'display': 'inline-block',
+                'float': 'left',
+                'height': (settings.height - 96) + 'px',
+                'left': ((settings.width - (settings.spacing * 4)) + (settings.spacing * 2)) + 'px',
+                'margin': (settings.spacing * 2) + 'px ' + (settings.spacing * 2) + 'px -' + ((settings.height - 96) + (settings.spacing * 4)) + 'px',
+                'position': 'relative',
+                'top': '-' + ((settings.height - 96) + (settings.spacing * 4)) + 'px',
+                'width': (settings.width - (settings.spacing * 4)) + 'px'
+            });
+            container.append(formWrapper);
+
+
+            var onlineListWrapper = new Element('div');
+            onlineListWrapper.addClass('onlineList-wrapper');
+            onlineListWrapper.css({
+                'backgroundColor': '#eaeaea',
+                'display': 'inline-block',
+                'float': 'left',
+                'height': (settings.height - 96) + 'px',
+                'left': '-' + ((settings.width - (settings.spacing * 4)) + (settings.spacing * 2)) + 'px',
+                'margin': (settings.spacing * 2) + 'px ' + (settings.spacing * 2) + 'px -' + ((settings.height - 96) + (settings.spacing * 4)) + 'px',
+                'position': 'relative',
+                'top': '-' + ((settings.height - 96) + (settings.spacing * 4)) + 'px',
+                'width': (settings.width - (settings.spacing * 4)) + 'px'
+            });
+            container.append(onlineListWrapper);
+
+
             var chatForm = new Element('form');
             chatForm.css({
-                display: 'block',
-                margin: '0 8px 4px'
+                'display': 'block',
+                'margin': '0 ' + (settings.spacing * 2 ) + 'px ' + settings.spacing + 'px'
             });
             container.append(chatForm);
             var chatTextarea = new Element('textarea');
@@ -698,7 +852,13 @@ var taka = taka || function(settings) {
                 'disabled': 'true'
             });
             chatTextarea.css({
-                'width': (settings.width - 16) + 'px'
+                'boxSizing': 'border-box',
+                'fontFamily': 'inherit',
+                'fontSize': 'inherit',
+                'height': '56px',
+                'padding': settings.spacing + 'px',
+                'resize': 'none',
+                'width': (settings.width - (settings.spacing * 4)) + 'px'
             });
             chatForm.append(chatTextarea);
 
@@ -741,6 +901,9 @@ var taka = taka || function(settings) {
             var resetTextarea = function() {
                 chatTextarea.HTMLElement.value = '';
             };
+            var focusTextarea = function() {
+                chatTextarea.HTMLElement.focus();
+            };
             chatForm.on('submit', function(event) {
                 event.preventDefault();
                 disableTextarea();
@@ -751,14 +914,16 @@ var taka = taka || function(settings) {
             /**
              * Socket event functions wrapper.
              * @namespace
-             * @method sessionStart    - Incoming session data from the server.
-             * @method initialMessages - Initial message data used to populate chat.
+             * @method sessionStart       - Incoming session data from the server.
+             * @method initialMessages    - Initial message data used to populate chat.
+             * @method additionalMessages - Additional message data used to populate chat history.
              * @readonly
              */
             var SocketEvents = {
 
 
                 /**
+                 * Loads session data from server into a cookie and enables the textarea.
                  * @param data - Current session data in JSON format.
                  * @readonly
                  */
@@ -771,6 +936,7 @@ var taka = taka || function(settings) {
 
 
                 /**
+                 * Populates the chat history with the most recent messages.
                  * @param data - An array of message JSON objects.
                  * @readonly
                  */
@@ -779,10 +945,12 @@ var taka = taka || function(settings) {
                     for (var i = 0, numMessages = data.length; i < numMessages; i++) {
                         addMessage(data[i]);
                     }
+                    messageWrapper.HTMLElement.scrollTop = messageWrapper.HTMLElement.scrollHeight;
                 },
 
 
                 /**
+                 * Populates the chat history with older messages.
                  * @param data - An array of message JSON objects.
                  * @readonly
                  */
@@ -792,15 +960,28 @@ var taka = taka || function(settings) {
                     }
                 },
 
+
+                /**
+                 * Adds a new message from another client to the chat history.
+                 * @param data - An array of message JSON objects.
+                 * @readonly
+                 */
                 newMessage: function(data) {
-                    addMessage(data);
+                    addMessageAndScroll(data);
                     notify();
                 },
+
+
+                /**
+                 * Adds a new message from this client to the chat history.
+                 * @param data - An array of message JSON objects.
+                 * @readonly
+                 */
                 confirmMessage: function(data) {
-                    addMessage(data);
-                    scrollMessages(null, true);
+                    addMessageAndScroll(data);
                     enableTextarea();
                     resetTextarea();
+                    focusTextarea();
                 }
             };
 
