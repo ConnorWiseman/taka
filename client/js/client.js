@@ -496,6 +496,9 @@ var taka = taka || function(settings) {
         if (typeof settings.animateMessages === 'undefined') {
             settings.animateMessages = true;
         }
+        if (typeof settings.defaultProtocol === 'undefined') {
+            settings.defaultProtocol = 'http';
+        }
         settings.volume = getCookie('taka-volume') || 2;
 
 
@@ -802,8 +805,11 @@ var taka = taka || function(settings) {
              * @readonly
              */
             var parseImages = function(message) {
-                return message.replace(/((https?|ftp):)?\/\/.*(jpeg|jpg|png|gif|bmp)/, function(url) {
-                    return '<img src="' + url + '" style="clear: both; display: block; margin: ' + (settings.spacing * 4) + 'px auto; max-height: ' + (settings.height - 156) + 'px; max-width: ' + (settings.width - (settings.spacing * 10)) + 'px;" />';
+                var imgRegex = /((https?):)?\/\/\S*(jpeg|jpg|png|gif|bmp)/i;
+
+
+                return message.replace(imgRegex, function(url) {
+                    return '<img src="' + url + '" style="clear: both; display: block; margin: ' + (settings.spacing * 4) + 'px auto; max-height: ' + (settings.height - 140) + 'px; max-width: ' + (settings.width - 40) + 'px;" />';
                 });
             };
 
@@ -815,8 +821,24 @@ var taka = taka || function(settings) {
              * @readonly
              */
             var parseLinks = function(message) {
-                return message.replace(/(([a-z]+:\/\/)?(([a-z0-9\-]+\.)+([a-z]{2}|aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|local|internal))(:[0-9]{1,5})?(\/[a-z0-9_\-\.~]+)*(\/([a-z0-9_\-\.]*)(\?[a-z0-9+_\-\.%=&amp;]*)?)?(#[a-zA-Z0-9!$&'()*+.=-_~:@/?]*)?)(\s+|$)/gi, function(url) {
-                    return '<a href="' + url + '" target="_blank">' + url + '</a>';
+                var urlRegex = /(((https*?)+:\/\/)*?(([a-z0-9\-]+\.)+([a-z]{2,24}))(\/[a-z0-9_\-\.~]+)*(\/([a-z0-9_\-\.]*)(\?[a-z0-9+_\-\.%=&amp;]*)?)?(#[a-zA-Z0-9!$&'()*+.=-_~:@\/?]*)?)(\s+|$)/gi;
+
+
+                return message.replace(urlRegex, function(url) {
+                    url = url.trim();
+                    var parts = url.split('://'),
+                        linkString;
+
+
+                    if (parts.length > 1) {
+                        linkString = '<a href="' + url + '" target="_blank">' + url + '</a> ';
+                    }
+                    else {
+                        linkString = '<a href="' + settings.defaultProtocol + '://' + url + '" target="_blank">' + url + '</a> ';
+                    }
+
+
+                    return linkString;
                 });
             };
 
@@ -1152,6 +1174,8 @@ var taka = taka || function(settings) {
              * @method sessionStart       - Incoming session data from the server.
              * @method initialMessages    - Initial message data used to populate chat.
              * @method additionalMessages - Additional message data used to populate chat history.
+             * @method newMessage         - Adds a new message from another client to the chat history.
+             * @method confirmMessage     - Adds a new message from this client to the chat history.
              * @readonly
              */
             var SocketEvents = {
