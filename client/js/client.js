@@ -821,7 +821,7 @@ var taka = taka || function(settings) {
              * @readonly
              */
             var parseLinks = function(message) {
-                var urlRegex = /(((https*?)+:\/\/)*?(([a-z0-9\-]+\.)+([a-z]{2,24}))(\/[a-z0-9_\-\.~]+)*(\/([a-z0-9_\-\.]*)(\?[a-z0-9+_\-\.%=&amp;]*)?)?(#[a-zA-Z0-9!$&'()*+.=-_~:@\/?]*)?)(\s+|$)/gi;
+                var urlRegex = /(((https*?)+:\/\/)(([a-z0-9\-]+\.)+([a-z]{2,24}))(\/[a-z0-9_\-\.~]+)*(\/([a-z0-9_\-\.]*)(\?[a-z0-9+_\-\.%=&amp;]*)?)?(#[a-zA-Z0-9!$&'()*+.=-_~:@\/?]*)?)(\s+|$)/gi;
 
 
                 return message.replace(urlRegex, function(url) {
