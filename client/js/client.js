@@ -1134,15 +1134,24 @@ var taka = taka || function(settings) {
                 'width': settings.width + 'px',
                 'zIndex': '-2'
             });
-            popupWindowContents.addClass('popup-window-contents');
-            popupWindow.append(popupWindowContents);
 
+
+            /**
+             * Shows the popup window.
+             * @readonly
+             */
             var showPopupWindow = function() {
                 popupWindow.css({
                     'opacity': '1',
                     'zIndex': '2'
                 });
             };
+
+
+            /**
+             * Hides the popup window.
+             * @readonly
+             */
             var hidePopupWindow = function() {
                 popupWindow.css({
                     'opacity': '0'
@@ -1153,6 +1162,12 @@ var taka = taka || function(settings) {
                     })
                 }, 350);
             };
+
+
+            popupWindowContents.addClass('popup-window-contents');
+            popupWindow.append(popupWindowContents);
+
+
             fadeBackground.addClass('fade-background');
             fadeBackground.css({
                 'backgroundColor': 'rgba(0, 0, 0, 0.3)',
@@ -1165,6 +1180,8 @@ var taka = taka || function(settings) {
                 hidePopupWindow();
             });
             popupWindow.append(fadeBackground);
+
+
             container.append(popupWindow);
 
 
@@ -1245,14 +1262,14 @@ var taka = taka || function(settings) {
             };
 
 
+            // Replace the script instance with the chat container.
             replaceScript(settings.currentScript, container);
 
 
-            socket.on('sessionStart', SocketEvents.sessionStart);
-            socket.on('initialMessages', SocketEvents.initialMessages);
-            socket.on('additionalMessages', SocketEvents.additionalMessages);
-            socket.on('newMessage', SocketEvents.newMessage);
-            socket.on('confirmMessage', SocketEvents.confirmMessage);
+            // Attach socket event listeners.
+            for (var socketEvent in SocketEvents) {
+                socket.on(String(socketEvent), SocketEvents[socketEvent]);
+            }
         });
     };
 
