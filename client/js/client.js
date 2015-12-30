@@ -1219,8 +1219,9 @@ var taka = taka || function(settings) {
             });
             userControls.on('click', function(event) {
                 event.preventDefault();
+
+
                 popupWindowContents.removeChildren();
-                popupWindowContents.append(popupWindowContentsTitle('Sign In / Register'));
                 popupWindowContents.css({
                     'width': ((settings.width / 2) > 160) ? (settings.width / 2) + 'px' : '160px',
                     'height': ((settings.height / 2) > 120) ? (settings.height / 2) + 'px' : '120px',
@@ -1233,6 +1234,46 @@ var taka = taka || function(settings) {
                     'margin': '-' + (((settings.height / 4) > 60) ? (settings.height / 4) + 'px' : '60px') + ' -' + (((settings.width / 4) > 80) ? (settings.width / 4) + 'px' : '80px'),
                     'boxShadow': 'rgba(0, 0, 0, 0.7) 0 0 5px'
                 });
+                popupWindowContents.append(popupWindowContentsTitle('Sign In / Register'));
+
+
+                var signInForm = new Element('form');
+                signInForm.on('submit', function(event) {
+                    event.preventDefault();
+                });
+                signInForm.css({
+                    'padding': (settings.spacing * 2) + 'px'
+                });
+
+
+                var usernameInput = new Element('input');
+                usernameInput.css({
+                    'boxSizing': 'border-box',
+                    'display': 'block',
+                    'padding': settings.spacing + 'px',
+                    'margin': '0 auto ' + (settings.spacing * 2) + 'px',
+                    'width': '140px'
+                });
+                usernameInput.setAttribute('placeholder', 'Username');
+                signInForm.append(usernameInput);
+
+
+                var passwordInput = new Element('input');
+                passwordInput.css({
+                    'boxSizing': 'border-box',
+                    'display': 'block',
+                    'padding': settings.spacing + 'px',
+                    'margin': '0 auto ' + (settings.spacing * 2) + 'px',
+                    'width': '140px'
+                });
+                passwordInput.setAttributes({
+                    'placeholder': 'Password',
+                    'type': 'password'
+                });
+                signInForm.append(passwordInput);
+
+
+                popupWindowContents.append(signInForm);
                 showPopupWindow();
             });
             rightMenu.append(userControls);
