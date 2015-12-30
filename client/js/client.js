@@ -1017,6 +1017,115 @@ var taka = taka || function(settings) {
             });
 
 
+            var popupWindow = new Element('div'),
+                popupWindowContents = new Element('div'),
+                fadeBackground = new Element('div');
+            popupWindow.addClass('popup-window');
+            popupWindow.css({
+                'height': settings.height + 'px',
+                'left': '0',
+                'margin': '0 0 -' + settings.height + 'px',
+                'position': 'absolute',
+                'opacity': '0',
+                'top': '0',
+                'transition': 'opacity 0.15s ease-in',
+                'width': settings.width + 'px',
+                'zIndex': '-2'
+            });
+
+
+            /**
+             * Shows the popup window.
+             * @readonly
+             */
+            var showPopupWindow = function() {
+                popupWindow.css({
+                    'opacity': '1',
+                    'zIndex': '2'
+                });
+            };
+
+
+            /**
+             * Hides the popup window.
+             * @readonly
+             */
+            var hidePopupWindow = function() {
+                popupWindow.css({
+                    'opacity': '0'
+                });
+                setTimeout(function() {
+                    popupWindow.css({
+                        zIndex: '-2'
+                    })
+                }, 350);
+            };
+
+
+            document.addEventListener('keyup', function(event) {
+                if (event.keyCode === 27) {
+                    hidePopupWindow();
+                }
+            });
+
+
+            popupWindowContents.addClass('popup-window-contents');
+            popupWindow.append(popupWindowContents);
+
+
+            fadeBackground.addClass('fade-background');
+            fadeBackground.css({
+                'backgroundColor': 'rgba(0, 0, 0, 0.3)',
+                'height': settings.height + 'px',
+                'margin': '0 0 -' + settings.height + 'px',
+                'width': settings.width + 'px'
+            });
+            fadeBackground.on('click', function(event) {
+                event.preventDefault();
+                hidePopupWindow();
+            });
+            popupWindow.append(fadeBackground);
+
+
+            container.append(popupWindow);
+
+
+            /**
+             * Creates a title for the contents of the popup window.
+             * @param {string} titleText - The title text.
+             * @returns {Object} - Element.<HTMLElement>
+             */
+            var popupWindowContentsTitle = function(titleText) {
+                var title = new Element('div');
+                title.addClass('popup-window-contents-title');
+                title.css({
+                    'backgroundColor': '#212121',
+                    'color': '#fafafa',
+                    'fontWeight': 'bold',
+                    'padding': (settings.spacing * 2) + 'px'
+                });
+                title.text(titleText);
+
+                
+                var closePopup = new Element('a');
+                closePopup.setAttribute('href', '#');
+                closePopup.addClass('fa');
+                closePopup.addClass('fa-times');
+                closePopup.css({
+                    'float': 'right',
+                    'textDecoration': 'none'
+                });
+                closePopup.on('click', function(event) {
+                    event.preventDefault();
+                    hidePopupWindow();
+                });
+                title.append(closePopup);
+                
+                
+                return title;
+            };
+
+
             var chatMenu = new Element('div');
             chatMenu.css({
                 'clear': 'both',
@@ -1110,6 +1219,20 @@ var taka = taka || function(settings) {
             });
             userControls.on('click', function(event) {
                 event.preventDefault();
+                popupWindowContents.removeChildren();
+                popupWindowContents.append(popupWindowContentsTitle('Sign In / Register'));
+                popupWindowContents.css({
+                    'width': ((settings.width / 2) > 160) ? (settings.width / 2) + 'px' : '160px',
+                    'height': ((settings.height / 2) > 120) ? (settings.height / 2) + 'px' : '120px',
+                    'backgroundColor': '#ffffff',
+                    'borderRadius': '2px',
+                    'overflow': 'hidden',
+                    'position': 'absolute',
+                    'top': '50%',
+                    'left': '50%',
+                    'margin': '-' + (((settings.height / 4) > 60) ? (settings.height / 4) + 'px' : '60px') + ' -' + (((settings.width / 4) > 80) ? (settings.width / 4) + 'px' : '80px'),
+                    'boxShadow': 'rgba(0, 0, 0, 0.7) 0 0 5px'
+                });
                 showPopupWindow();
             });
             rightMenu.append(userControls);
@@ -1117,72 +1240,6 @@ var taka = taka || function(settings) {
 
             chatMenu.append(rightMenu);
             container.append(chatMenu);
-
-
-            var popupWindow = new Element('div'),
-                popupWindowContents = new Element('div'),
-                fadeBackground = new Element('div');
-            popupWindow.addClass('popup-window');
-            popupWindow.css({
-                'height': settings.height + 'px',
-                'left': '0',
-                'margin': '0 0 -' + settings.height + 'px',
-                'position': 'absolute',
-                'opacity': '0',
-                'top': '0',
-                'transition': 'opacity 0.15s ease-in',
-                'width': settings.width + 'px',
-                'zIndex': '-2'
-            });
-
-
-            /**
-             * Shows the popup window.
-             * @readonly
-             */
-            var showPopupWindow = function() {
-                popupWindow.css({
-                    'opacity': '1',
-                    'zIndex': '2'
-                });
-            };
-
-
-            /**
-             * Hides the popup window.
-             * @readonly
-             */
-            var hidePopupWindow = function() {
-                popupWindow.css({
-                    'opacity': '0'
-                });
-                setTimeout(function() {
-                    popupWindow.css({
-                        zIndex: '-2'
-                    })
-                }, 350);
-            };
-
-
-            popupWindowContents.addClass('popup-window-contents');
-            popupWindow.append(popupWindowContents);
-
-
-            fadeBackground.addClass('fade-background');
-            fadeBackground.css({
-                'backgroundColor': 'rgba(0, 0, 0, 0.3)',
-                'height': settings.height + 'px',
-                'margin': '0 0 -' + settings.height + 'px',
-                'width': settings.width + 'px'
-            });
-            fadeBackground.on('click', function(event) {
-                event.preventDefault();
-                hidePopupWindow();
-            });
-            popupWindow.append(fadeBackground);
-
-
-            container.append(popupWindow);
 
 
             /**
