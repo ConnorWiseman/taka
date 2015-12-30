@@ -1017,6 +1017,34 @@ var taka = taka || function(settings) {
             });
 
 
+            var beingDragged = false,
+                mousePosition = {
+                    x: 0,
+                    y: 0
+                },
+                popupPosition = {
+                    x: 0,
+                    y: 0
+                };
+
+
+            document.addEventListener('mousemove', function(event) {
+                mousePosition.x = event.clientX;
+                mousePosition.y = event.clientY;
+                if (beingDragged) {
+                    var widthOffset = popupWindowContents.HTMLElement.style.width.split('px')[0] / 2,
+                        heightOffset = popupWindowContents.HTMLElement.style.height.split('px')[0] / 2;
+                    popupWindowContents.css({
+                        'left': (mousePosition.x - popupPosition.x + widthOffset) + 'px',
+                        'top': (mousePosition.y - popupPosition.y + heightOffset) + 'px',
+                    });
+                }
+            });
+            document.addEventListener('mouseup', function(event) {
+                beingDragged = false;
+            });
+
+
             var popupWindow = new Element('div'),
                 popupWindowContents = new Element('div'),
                 fadeBackground = new Element('div');
@@ -1101,8 +1129,13 @@ var taka = taka || function(settings) {
                 title.css({
                     'backgroundColor': '#212121',
                     'color': '#fafafa',
+                    'cursor': 'move',
                     'fontWeight': 'bold',
-                    'padding': (settings.spacing * 2) + 'px'
+                    'padding': (settings.spacing * 2) + 'px',
+                    'MozUserSelect': 'none',
+                    'webkitUserSelect': 'none',
+                    'msUserSelect': 'none',
+                    'userSelect': 'none'
                 });
                 title.text(titleText);
 
@@ -1120,6 +1153,13 @@ var taka = taka || function(settings) {
                     hidePopupWindow();
                 });
                 title.append(closePopup);
+
+
+                title.on('mousedown', function(event) {
+                    beingDragged = true;
+                    popupPosition.x = mousePosition.x - popupWindowContents.HTMLElement.offsetLeft;
+                    popupPosition.y = mousePosition.y - popupWindowContents.HTMLElement.offsetTop;
+                });
                 
                 
                 return title;
