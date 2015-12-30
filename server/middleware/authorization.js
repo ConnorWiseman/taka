@@ -68,6 +68,7 @@ module.exports = function(socket, next) {
             return next(error);
         }
 
+
         // Update the local session values.
         updateLocalSession(result);
 

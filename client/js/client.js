@@ -2,6 +2,8 @@
 
 
 var taka = taka || function(settings) {
+
+
     /**
      * A cross-browser shim for window.requestAnimationFrame.
      * @readonly
@@ -103,9 +105,9 @@ var taka = taka || function(settings) {
         var hours = newDate.getHours();
         var minutes = newDate.getMinutes();
         minutes = minutes < 10 ? '0' + minutes : minutes;
-        var ampm = hours >= 12 ? ' PM' : ' AM';
+        var period = hours >= 12 ? ' PM' : ' AM';
         
-        newDateString = monthNames[monthIndex] + ' ' + day + ', ' +  hours + ':' + minutes + ampm;
+        newDateString = monthNames[monthIndex] + ' ' + day + ', ' +  hours + ':' + minutes + period;
 
         return newDateString;
     };
@@ -144,7 +146,7 @@ var taka = taka || function(settings) {
             script.addEventListener('load', function() {
                 return callback();
             });
-            script.setAttribute('async', true);
+            script.setAttribute('async', 'true');
             script.setAttribute('src', 'https://cdn.socket.io/socket.io-1.3.7.js');
             document.head.appendChild(script);
         }
@@ -164,12 +166,12 @@ var taka = taka || function(settings) {
         test.classList.add('fa');
         if (window.getComputedStyle(test).fontFamily !== 'FontAwesome') {
             var link = document.createElement('link');
-            link.setAttribute('rel', 'stylesheet');
-            link.setAttribute('href', 'https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css');
-            document.head.appendChild(link);
             link.addEventListener('load', function(event) {
                 return callback();
             });
+            link.setAttribute('rel', 'stylesheet');
+            link.setAttribute('href', 'https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css');
+            document.head.appendChild(link);
         }
         else {
             return callback();
@@ -279,9 +281,22 @@ var taka = taka || function(settings) {
          * @returns {this}
          * @readonly
          */
-        this.setText = function(string) {
+        this.text = function(string) {
             this.removeChildren();
             this.appendText(String(string));
+            return this;
+        };
+
+
+        /**
+         * Sets the contents of the Element to a specified string of HTML.
+         * @param {string} string - Some HTML to use for replacement.
+         * @returns {this}
+         * @readonly
+         */
+        this.html = function(string) {
+            this.removeChildren();
+            this.HTMLElement.innerHTML = String(string);
             return this;
         };
 
@@ -307,7 +322,7 @@ var taka = taka || function(settings) {
          */
         this.setAttributes = function(attributes) {
             for (var attribute in attributes) {
-                this.HTMLElement[String(attribute)] = String(attributes[attribute]);
+                this.HTMLElement[String(attribute)] = attributes[attribute];
             }
             return this;
         };
@@ -419,7 +434,6 @@ var taka = taka || function(settings) {
                     requestAnimationFrame(animateScroll);
                 }
                 else {
-                    console.log('done', Math.random());
                     this.HTMLElement.scrollTop = targetPosition;
                     return this;
                 }
@@ -482,6 +496,30 @@ var taka = taka || function(settings) {
         if (typeof settings.animateMessages === 'undefined') {
             settings.animateMessages = true;
         }
+        settings.volume = getCookie('taka-volume') || 2;
+
+
+        /**
+         * Gets the volume setting for the specified level of volume.
+         * 2 is 100%. 1 is 50%. 0 is 0%.
+         * @param {number} volume - The level for the volume setting to return.
+         * @returns {number} - A volume setting.
+         */
+        var getVolume = function(volume) {
+            var volumeSettings = [0.0, 0.5, 1.0];
+            return volumeSettings[volume];
+        };
+
+
+        /**
+         * Gets the Font Awesome volume class name for the specified level of volume.
+         * @param {number} volume - The level for the volume setting to return.
+         * @returns {string} - A Font Awesome class name.
+         */
+        var getVolumeIcon = function(volume) {
+            var volumeIcons = ['fa-volume-off', 'fa-volume-down', 'fa-volume-up'];
+            return volumeIcons[volume];
+        };
 
 
         injectDependencies(function() {
@@ -495,37 +533,47 @@ var taka = taka || function(settings) {
             container.setAttribute('id', 'taka');
             container.css({
                 'height': settings.height + 'px',
-                //'overflow': 'hidden',
                 'width': settings.width + 'px'
             });
 
 
             var notificationHandler = new Element('audio');
             notificationHandler.setAttributes({
-                preload: 'auto',
-                volume: '1'
+                'preload': 'auto',
+                'volume': getVolume(settings.volume)
             });
             var mp3 = new Element('source');
             mp3.setAttributes({
-                src: settings.audio.mp3,
-                type: 'audio/mpeg'
+                'src': settings.audio.mp3,
+                'type': 'audio/mpeg'
             });
             notificationHandler.append(mp3);
             var ogg = new Element('source');
             ogg.setAttributes({
-                src: settings.audio.ogg,
-                type: 'audio/ogg'
+                'src': settings.audio.ogg,
+                'type': 'audio/ogg'
             });
             notificationHandler.append(ogg);
             container.append(notificationHandler);
 
 
             /**
-             * Plays an audio notification.
+             * Upates the volume settings, then plays an audio notification.
              * @readonly
              */
             var notify = function() {
+                notificationHandler.setAttribute('volume', getVolume(settings.volume));
+                volumeControls.setAttribute('className', 'fa ' + getVolumeIcon(settings.volume));
                 notificationHandler.HTMLElement.play();
+            };
+
+
+            /**
+             * Toggles the notification handler volume setting between full, half, and mute.
+             * @readonly
+             */
+            var toggleVolume = function() {
+                notificationHandler.setAttribute('volume', getVolume(settings.volume));
             };
 
 
@@ -534,10 +582,9 @@ var taka = taka || function(settings) {
             messageWrapper.css({
                 'display': 'inline-block',
                 'float': 'left',
-                'height': (settings.height - 96) + 'px',
+                'height': (settings.height - 98) + 'px',
                 'margin': (settings.spacing * 2) + 'px',
                 'overflow': 'auto',
-                'position': 'relative',
                 'width': (settings.width - (settings.spacing * 4)) + 'px'
             });
             messageWrapper.on('scroll', function(event) {
@@ -548,7 +595,7 @@ var taka = taka || function(settings) {
             var messageList = new Element('div');
             messageList.addClass('message-list');
             messageList.css({
-                width: '100%'
+                'width': '100%'
             });
             messageWrapper.append(messageList);
             container.append(messageWrapper);
@@ -574,7 +621,6 @@ var taka = taka || function(settings) {
                 if (atBottom || forceScroll) {
                     if (animate && settings.activeTab) {
                         var targetPosition = messageWrapper.HTMLElement.scrollHeight;
-                        console.log(targetPosition);
                         messageWrapper.animateScrollTo(targetPosition, 2);
                     }
                     else {
@@ -644,9 +690,9 @@ var taka = taka || function(settings) {
 
                 avatar.addClass('avatar');
                 avatar.setAttributes({
-                    width: '35',
-                    height: '35',
-                    src: avatarSrc
+                    'width': '35',
+                   ' height': '35',
+                    'src': avatarSrc
                 });
                 avatar.css({
                     'float': 'left',
@@ -737,6 +783,45 @@ var taka = taka || function(settings) {
 
 
             /**
+             * Scrubs unwanted HTML from a specific message string.
+             * @param {string} message - A message to filter.
+             * @returns {string} - A filtered message.
+             * @readonly
+             */
+            var filterMessageContents = function(message) {
+                var tempDiv = document.createElement('div');
+                tempDiv.textContent = message;
+                return tempDiv.innerHTML;
+            };
+
+
+            /**
+             * Replaces image URLs in a specific message string with image elements.
+             * @param {string} message - A message to add images to.
+             * @returns {string} - A message with added images.
+             * @readonly
+             */
+            var parseImages = function(message) {
+                return message.replace(/((https?|ftp):)?\/\/.*(jpeg|jpg|png|gif|bmp)/, function(url) {
+                    return '<img src="' + url + '" style="clear: both; display: block; margin: ' + (settings.spacing * 4) + 'px auto; max-height: ' + (settings.height - 156) + 'px; max-width: ' + (settings.width - (settings.spacing * 10)) + 'px;" />';
+                });
+            };
+
+
+            /**
+             * Replaces URLs in a specific message string with active links.
+             * @param {string} message - A message to add links to.
+             * @returns {string} - A message with added links.
+             * @readonly
+             */
+            var parseLinks = function(message) {
+                return message.replace(/(([a-z]+:\/\/)?(([a-z0-9\-]+\.)+([a-z]{2}|aero|arpa|biz|com|coop|edu|gov|info|int|jobs|mil|museum|name|nato|net|org|pro|travel|local|internal))(:[0-9]{1,5})?(\/[a-z0-9_\-\.~]+)*(\/([a-z0-9_\-\.]*)(\?[a-z0-9+_\-\.%=&amp;]*)?)?(#[a-zA-Z0-9!$&'()*+.=-_~:@/?]*)?)(\s+|$)/gi, function(url) {
+                    return '<a href="' + url + '" target="_blank">' + url + '</a>';
+                });
+            };
+
+
+            /**
              * Creates an element to display a message's content.
              * @param {Object} data - A message JSON object.
              * @returns {Object} - An HTMLObject with necessary attributes and content.
@@ -745,7 +830,15 @@ var taka = taka || function(settings) {
             var createMessageContent = function(data) {
                 var messageContentElement = new Element('span');
                 messageContentElement.addClass('content');
-                messageContentElement.appendText(data.message);
+
+
+                // Filter the message and add other niceties.
+                var message = filterMessageContents(data.message);
+                message = parseImages(message);
+                message = parseLinks(message);
+
+
+                messageContentElement.html(message);
 
 
                 return messageContentElement;
@@ -807,39 +900,6 @@ var taka = taka || function(settings) {
                 }
             };
 
-
-            var formWrapper = new Element('div');
-            formWrapper.addClass('form-wrapper');
-            formWrapper.css({
-                'backgroundColor': '#eaeaea',
-                'display': 'inline-block',
-                'float': 'left',
-                'height': (settings.height - 96) + 'px',
-                'left': ((settings.width - (settings.spacing * 4)) + (settings.spacing * 2)) + 'px',
-                'margin': (settings.spacing * 2) + 'px ' + (settings.spacing * 2) + 'px -' + ((settings.height - 96) + (settings.spacing * 4)) + 'px',
-                'position': 'relative',
-                'top': '-' + ((settings.height - 96) + (settings.spacing * 4)) + 'px',
-                'width': (settings.width - (settings.spacing * 4)) + 'px'
-            });
-            container.append(formWrapper);
-
-
-            var onlineListWrapper = new Element('div');
-            onlineListWrapper.addClass('onlineList-wrapper');
-            onlineListWrapper.css({
-                'backgroundColor': '#eaeaea',
-                'display': 'inline-block',
-                'float': 'left',
-                'height': (settings.height - 96) + 'px',
-                'left': '-' + ((settings.width - (settings.spacing * 4)) + (settings.spacing * 2)) + 'px',
-                'margin': (settings.spacing * 2) + 'px ' + (settings.spacing * 2) + 'px -' + ((settings.height - 96) + (settings.spacing * 4)) + 'px',
-                'position': 'relative',
-                'top': '-' + ((settings.height - 96) + (settings.spacing * 4)) + 'px',
-                'width': (settings.width - (settings.spacing * 4)) + 'px'
-            });
-            container.append(onlineListWrapper);
-
-
             var chatForm = new Element('form');
             chatForm.css({
                 'display': 'block',
@@ -892,23 +952,198 @@ var taka = taka || function(settings) {
             });
 
 
+            /**
+             * Enables the text area.
+             * @readonly
+             */
             var enableTextarea = function() {
                 chatTextarea.removeAttribute('disabled');
             };
+
+
+            /**
+             * Disables the text area.
+             * @readonly
+             */
             var disableTextarea = function() {
                 chatTextarea.setAttribute('disabled', 'true');
             };
-            var resetTextarea = function() {
+
+
+            /**
+             * Clears the text area.
+             * @readonly
+             */
+            var clearTextarea = function() {
                 chatTextarea.HTMLElement.value = '';
             };
+
+
+            /**
+             * Gives focus to the text area.
+             * @readonly
+             */
             var focusTextarea = function() {
                 chatTextarea.HTMLElement.focus();
             };
+
+
             chatForm.on('submit', function(event) {
                 event.preventDefault();
                 disableTextarea();
                 socket.emit('sendMessage', chatTextarea.HTMLElement.value);
             });
+
+
+            var chatMenu = new Element('div');
+            chatMenu.css({
+                'clear': 'both',
+                'margin': '0 ' + (settings.spacing * 2) + 'px'
+            });
+
+
+            var onlineUsers = new Element('a'),
+                onlineUsersIcon = new Element('span'),
+                onlineUsersTotal = new Element('span');
+            onlineUsers.setAttribute('href', '#');
+            onlineUsers.css({
+                'float': 'left',
+                'textDecoration': 'none'
+            });
+            onlineUsers.on('click', function(event) {
+                event.preventDefault();
+                showPopupWindow();
+            });
+            onlineUsersIcon.addClass('fa');
+            onlineUsersIcon.addClass('fa-users');
+            onlineUsersTotal.css({
+                'margin': '0 0 0 ' + settings.spacing + 'px'
+            });
+            onlineUsers.append(onlineUsersIcon);
+            onlineUsers.append(onlineUsersTotal);
+            chatMenu.append(onlineUsers);
+
+
+            var rightMenu = new Element('div');
+            rightMenu.css({
+                'float': 'right'
+            });
+
+
+            var volumeControls = new Element('a');
+            volumeControls.setAttribute('href', '#');
+            volumeControls.addClass('fa');
+            volumeControls.addClass(getVolumeIcon(settings.volume));
+            volumeControls.css({
+                'margin': '0 ' + settings.spacing + 'px 0 0',
+                'textAlign': 'center',
+                'textDecoration': 'none',
+                'width': '12px'
+            });
+            volumeControls.on('click', function(event) {
+                event.preventDefault();
+                settings.volume--;
+                if (settings.volume < 0) {
+                    settings.volume = 2;
+                }
+                setCookie('taka-volume', settings.volume);
+                toggleVolume();
+                toggleVolumeIcon();
+                notify();
+            });
+            rightMenu.append(volumeControls);
+
+
+            /**
+             * Toggles the volume icon between full, half, and muted.
+             * @readonly
+             */
+            var toggleVolumeIcon = function() {
+                volumeControls.setAttribute('className', 'fa ' + getVolumeIcon(settings.volume));
+            };
+
+
+            var settingControls = new Element('a');
+            settingControls.setAttribute('href', '#');
+            settingControls.addClass('fa');
+            settingControls.addClass('fa-cog');
+            settingControls.css({
+                'display': 'none',
+                'margin': '0 ' + settings.spacing + 'px 0 0',
+                'textDecoration': 'none'
+            });
+            settingControls.on('click', function(event) {
+                event.preventDefault();
+                showPopupWindow();
+            });
+            rightMenu.append(settingControls);
+
+
+            var userControls = new Element('a');
+            userControls.setAttribute('href', '#');
+            userControls.addClass('fa');
+            userControls.addClass('fa-user-plus');
+            userControls.css({
+                'textDecoration': 'none'
+            });
+            userControls.on('click', function(event) {
+                event.preventDefault();
+                showPopupWindow();
+            });
+            rightMenu.append(userControls);
+
+
+            chatMenu.append(rightMenu);
+            container.append(chatMenu);
+
+
+            var popupWindow = new Element('div'),
+                popupWindowContents = new Element('div'),
+                fadeBackground = new Element('div');
+            popupWindow.addClass('popup-window');
+            popupWindow.css({
+                'height': settings.height + 'px',
+                'left': '0',
+                'margin': '0 0 -' + settings.height + 'px',
+                'position': 'absolute',
+                'opacity': '0',
+                'top': '0',
+                'transition': 'opacity 0.15s ease-in',
+                'width': settings.width + 'px',
+                'zIndex': '-2'
+            });
+            popupWindowContents.addClass('popup-window-contents');
+            popupWindow.append(popupWindowContents);
+
+            var showPopupWindow = function() {
+                popupWindow.css({
+                    'opacity': '1',
+                    'zIndex': '2'
+                });
+            };
+            var hidePopupWindow = function() {
+                popupWindow.css({
+                    'opacity': '0'
+                });
+                setTimeout(function() {
+                    popupWindow.css({
+                        zIndex: '-2'
+                    })
+                }, 350);
+            };
+            fadeBackground.addClass('fade-background');
+            fadeBackground.css({
+                'backgroundColor': 'rgba(0, 0, 0, 0.3)',
+                'height': settings.height + 'px',
+                'margin': '0 0 -' + settings.height + 'px',
+                'width': settings.width + 'px'
+            });
+            fadeBackground.on('click', function(event) {
+                event.preventDefault();
+                hidePopupWindow();
+            });
+            popupWindow.append(fadeBackground);
+            container.append(popupWindow);
 
 
             /**
@@ -980,7 +1215,7 @@ var taka = taka || function(settings) {
                 confirmMessage: function(data) {
                     addMessageAndScroll(data);
                     enableTextarea();
-                    resetTextarea();
+                    clearTextarea();
                     focusTextarea();
                 }
             };
