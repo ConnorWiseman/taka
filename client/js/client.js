@@ -1223,15 +1223,15 @@ var taka = taka || function(settings) {
 
                 popupWindowContents.removeChildren();
                 popupWindowContents.css({
-                    'width': ((settings.width / 2) > 160) ? (settings.width / 2) + 'px' : '160px',
-                    'height': ((settings.height / 2) > 120) ? (settings.height / 2) + 'px' : '120px',
+                    'width': '160px',
+                    'height': '148px',
                     'backgroundColor': '#ffffff',
                     'borderRadius': '2px',
                     'overflow': 'hidden',
                     'position': 'absolute',
                     'top': '50%',
                     'left': '50%',
-                    'margin': '-' + (((settings.height / 4) > 60) ? (settings.height / 4) + 'px' : '60px') + ' -' + (((settings.width / 4) > 80) ? (settings.width / 4) + 'px' : '80px'),
+                    'margin': '-74px 0 0 -80px',
                     'boxShadow': 'rgba(0, 0, 0, 0.7) 0 0 5px'
                 });
                 popupWindowContents.append(popupWindowContentsTitle('Sign In / Register'));
@@ -1273,6 +1273,50 @@ var taka = taka || function(settings) {
                 signInForm.append(passwordInput);
 
 
+                var buttonContainer = new Element('div'),
+                    signInButton = new Element('button'),
+                    registerButton = new Element('button');
+
+
+                buttonContainer.css({
+                    'margin': '0 auto',
+                    'width': '140px'
+                });
+
+
+                signInButton.css({
+                    'boxSizing': 'border-box',
+                    'display': 'inline-block',
+                    'padding': '2px',
+                    'margin': '0',
+                    'textAlign': 'center',
+                    'width': '68px'
+                });
+                signInButton.text('Sign In');
+                signInButton.on('click', function(event) {
+                    event.preventDefault();
+                    console.log('signing in');
+                });
+                buttonContainer.append(signInButton);
+
+
+                registerButton.css({
+                    'boxSizing': 'border-box',
+                    'display': 'inline-block',
+                    'padding': '2px',
+                    'margin': '0 0 0 ' + settings.spacing + 'px',
+                    'textAlign': 'center',
+                    'width': '68px'
+                });
+                registerButton.text('Register');
+                registerButton.on('click', function(event) {
+                    event.preventDefault();
+                    console.log('registering');
+                });
+                buttonContainer.append(registerButton);
+
+
+                signInForm.append(buttonContainer);
                 popupWindowContents.append(signInForm);
                 showPopupWindow();
             });
