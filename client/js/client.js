@@ -1031,12 +1031,16 @@ var taka = taka || function(settings) {
             document.addEventListener('mousemove', function(event) {
                 mousePosition.x = event.clientX;
                 mousePosition.y = event.clientY;
+
+
+                var widthOffset = popupWindow.HTMLElement.style.width.split('px')[0],
+                    heightOffset = popupWindow.HTMLElement.style.height.split('px')[0];
+
+
                 if (beingDragged) {
-                    var widthOffset = popupWindowContents.HTMLElement.style.width.split('px')[0] / 2,
-                        heightOffset = popupWindowContents.HTMLElement.style.height.split('px')[0] / 2;
-                    popupWindowContents.css({
-                        'left': (mousePosition.x - popupPosition.x + widthOffset) + 'px',
-                        'top': (mousePosition.y - popupPosition.y + heightOffset) + 'px',
+                    popupWindow.css({
+                        'left': (mousePosition.x - popupPosition.x + (widthOffset / 2)) + 'px',
+                        'top': (mousePosition.y - popupPosition.y + (heightOffset / 2)) + 'px',
                     });
                 }
             });
@@ -1045,9 +1049,7 @@ var taka = taka || function(settings) {
             });
 
 
-            var popupWindow = new Element('div'),
-                popupWindowContents = new Element('div'),
-                fadeBackground = new Element('div');
+            var popupWindow = new Element('div');
             popupWindow.addClass('popup-window');
             popupWindow.css({
                 'height': settings.height + 'px',
@@ -1090,33 +1092,18 @@ var taka = taka || function(settings) {
             };
 
 
+            popupWindow.addClass('popup-window');
+            popupWindow.css({
+                'top': '50%',
+                'left': '50%'
+            });
+
+
             document.addEventListener('keyup', function(event) {
                 if (event.keyCode === 27) {
                     hidePopupWindow();
                 }
             });
-
-
-            popupWindowContents.addClass('popup-window-contents');
-            popupWindowContents.css({
-                'top': '50%',
-                'left': '50%'
-            });
-            popupWindow.append(popupWindowContents);
-
-
-            fadeBackground.addClass('fade-background');
-            fadeBackground.css({
-                'backgroundColor': 'rgba(0, 0, 0, 0.3)',
-                'height': settings.height + 'px',
-                'margin': '0 0 -' + settings.height + 'px',
-                'width': settings.width + 'px'
-            });
-            fadeBackground.on('click', function(event) {
-                event.preventDefault();
-                hidePopupWindow();
-            });
-            popupWindow.append(fadeBackground);
 
 
             container.append(popupWindow);
@@ -1127,9 +1114,9 @@ var taka = taka || function(settings) {
              * @param {string} titleText - The title text.
              * @returns {Object} - Element.<HTMLElement>
              */
-            var popupWindowContentsTitle = function(titleText) {
+            var popupWindowTitle = function(titleText) {
                 var title = new Element('div');
-                title.addClass('popup-window-contents-title');
+                title.addClass('popup-window-title');
                 title.css({
                     'backgroundColor': '#212121',
                     'color': '#fafafa',
@@ -1165,8 +1152,8 @@ var taka = taka || function(settings) {
 
                 title.on('mousedown', function(event) {
                     beingDragged = true;
-                    popupPosition.x = mousePosition.x - popupWindowContents.HTMLElement.offsetLeft;
-                    popupPosition.y = mousePosition.y - popupWindowContents.HTMLElement.offsetTop;
+                    popupPosition.x = mousePosition.x - popupWindow.HTMLElement.offsetLeft;
+                    popupPosition.y = mousePosition.y - popupWindow.HTMLElement.offsetTop;
                 });
                 
                 
@@ -1193,8 +1180,8 @@ var taka = taka || function(settings) {
                 event.preventDefault();
 
 
-                popupWindowContents.removeChildren();
-                popupWindowContents.css({
+                popupWindow.removeChildren();
+                popupWindow.css({
                     'width': '160px',
                     'height': '248px',
                     'backgroundColor': '#ffffff',
@@ -1204,7 +1191,7 @@ var taka = taka || function(settings) {
                     'margin': '-124px 0 0 -80px',
                     'boxShadow': 'rgba(0, 0, 0, 0.7) 0 0 5px'
                 });
-                popupWindowContents.append(popupWindowContentsTitle('Users Online'));
+                popupWindow.append(popupWindowTitle('Users Online'));
 
 
                 showPopupWindow();
@@ -1285,8 +1272,8 @@ var taka = taka || function(settings) {
                 event.preventDefault();
 
 
-                popupWindowContents.removeChildren();
-                popupWindowContents.css({
+                popupWindow.removeChildren();
+                popupWindow.css({
                     'width': '160px',
                     'height': '148px',
                     'backgroundColor': '#ffffff',
@@ -1296,7 +1283,7 @@ var taka = taka || function(settings) {
                     'margin': '-74px 0 0 -80px',
                     'boxShadow': 'rgba(0, 0, 0, 0.7) 0 0 5px'
                 });
-                popupWindowContents.append(popupWindowContentsTitle('Sign In / Register'));
+                popupWindow.append(popupWindowTitle('Sign In / Register'));
 
 
                 var signInForm = new Element('form');
@@ -1379,7 +1366,7 @@ var taka = taka || function(settings) {
 
 
                 signInForm.append(buttonContainer);
-                popupWindowContents.append(signInForm);
+                popupWindow.append(signInForm);
                 showPopupWindow();
             });
             rightMenu.append(userControls);
