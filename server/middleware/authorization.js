@@ -76,7 +76,7 @@ module.exports = function(socket, next) {
 
 
         // Check to see if the connecting user is banned.
-        Ban.check(socket, function(error, result) {
+        Ban.checkSocket(socket, function(error, result) {
             if (error) {
                 return next(error);
             }

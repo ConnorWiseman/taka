@@ -727,7 +727,7 @@ var taka = taka || function(settings) {
                 information.appendText(formatDate(data.date));
 
 
-                if (settings.role === 'admin' || settings.role === 'mod') {
+                if (isStaff()) {
                     information.setAttribute('title', 'IP: ' + addressFromInt(data.ip_address));
                     var deleteLink = new Element('a');
                     deleteLink.addClass('delete-message');
@@ -1256,7 +1256,10 @@ var taka = taka || function(settings) {
             signInButton.text('Sign In');
             signInButton.on('click', function(event) {
                 event.preventDefault();
-                console.log('signing in');
+                socket.emit('signInAttempt', {
+                    'username': usernameInput.HTMLElement.value,
+                    'password': passwordInput.HTMLElement.value
+                });
             });
             buttonContainer.append(signInButton);
 
@@ -1276,7 +1279,6 @@ var taka = taka || function(settings) {
                     'username': usernameInput.HTMLElement.value,
                     'password': passwordInput.HTMLElement.value
                 });
-                console.log('registering');
             });
             buttonContainer.append(registerButton);
 
@@ -1379,13 +1381,17 @@ var taka = taka || function(settings) {
             var userControls = new Element('a');
             userControls.setAttribute('href', '#');
             userControls.addClass('fa');
-            userControls.addClass('fa-user-plus');
             userControls.css({
                 'textDecoration': 'none'
             });
             userControls.on('click', function(event) {
                 event.preventDefault();
-                signInWindow.show();
+                if (settings.role === 'guest') {
+                    signInWindow.show();
+                }
+                else {
+                    socket.emit('signOut');
+                }
             });
             rightMenu.append(userControls);
 
@@ -1415,6 +1421,16 @@ var taka = taka || function(settings) {
                 sessionStart: function(data) {
                     setCookie('taka-session_id', data.id);
                     settings.role = data.role;
+
+
+                    if (settings.role === 'guest') {
+                        userControls.addClass('fa-user-plus');
+                    }
+                    else {
+                        userControls.addClass('fa-user-times');
+                    }
+
+
                     console.log(data);
                     enableTextarea();
                 },

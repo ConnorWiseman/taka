@@ -44,7 +44,6 @@ module.exports = function(io) {
         socket.on('sendMessage', function(message) {
             Message.add(socket.session, message, function(error, result) {
                 if (error) {
-                    console.log(error);
                     return;
                 }
 
@@ -106,15 +105,28 @@ module.exports = function(io) {
          */
         var bindUserToSession = function(session_id, user) {
             Session.regenerate(session_id, user, function(error, sessionResult) {
-                socket.session.user_id = user._id;
                 socket.session.id = sessionResult.id;
-                socket.session.role = sessionResult.user.role;
-                socket.session.username = sessionResult.user.username;
+
+
+                if (!sessionResult.user) {
+                    socket.session.user_id = undefined;
+                    socket.session.role = 'guest';
+                    socket.session.username = Session.guestName(socket.session.id);
+                }
+                else {
+                    socket.session.user_id = sessionResult.user._id;
+                    socket.session.role = sessionResult.user.role;
+                    socket.session.username = sessionResult.user.username;
+                }
 
 
                 if (socket.isStaff()) {
                     socket.leave('public');
                     socket.join('staff');
+                }
+                else {
+                    socket.leave('staff');
+                    socket.join('public');
                 }
 
 
@@ -134,7 +146,6 @@ module.exports = function(io) {
          * @readonly
          */
         socket.on('registerUser', function(credentials) {
-            console.log(credentials);
             User.register(credentials, function(error, userResult) {
                 if (error) {
                     if (error.code === 11000) {
@@ -156,8 +167,10 @@ module.exports = function(io) {
          * @readonly
          */
         socket.on('signInAttempt', function(credentials) {
+            console.log(credentials);
             User.authorize(credentials, function(error, userResult) {
                 if (error) {
+                    console.log(error);
                     // sign in failed
                     return;
                 }
@@ -179,6 +192,15 @@ module.exports = function(io) {
                     return bindUserToSession(socket.session.id, userResult);
                 })
             });
+        });
+
+
+        /**
+         * Regenerates the session id and updates the local session.
+         * @readonly
+         */
+        socket.on('signOut', function() {
+            return bindUserToSession(socket.session.id, null);
         });
 
 

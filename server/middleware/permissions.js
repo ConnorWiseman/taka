@@ -12,20 +12,24 @@
 var permissions = {
     guest: {
         loadMessages: true,
+        registerUser: true,
         sendMessage: true,
-        registerUser: true
+        signInAttempt: true
     },
     user: {
         sendMessage: true,
+        signOut: true
     },
     mod: {
         deleteMessage: true,
         sendMessage: true,
+        signOut: true,
         viewIP: true
     },
     admin: {
         deleteMessage: true,
         sendMessage: true,
+        signOut: true,
         viewIP: true
     }
 };

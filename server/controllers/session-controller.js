@@ -26,7 +26,6 @@ var SessionModel = mongoose.model('Session');
 var updateSession = function(query, update, options, callback) {
     SessionModel.findOneAndUpdate(query, update, options).populate('user').lean().exec(function(error, session) {
         if (error) {
-            console.log('connorerror:', error);
             if (callback && typeof callback === 'function') {
                 return callback(error);
             }

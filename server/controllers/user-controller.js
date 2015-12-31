@@ -39,3 +39,27 @@ exports.register = function(credentials, callback) {
         return callback(null, user);
     });
 };
+
+
+/**
+ * Attempts to authorize a given set of credentials by comparing them against credentials
+ * from the database.
+ * @param {Object} credentials      - An object containing a username/password pair.
+ * @param {nodeCallback} callback   - A callback function to execute.
+ * @readonly
+ */
+exports.authorize = function(credentials, callback) {
+    UserModel.findOne({ username: String(credentials.username) }).select('password').lean().exec(function(error, result) {
+        if (error) {
+            return callback(error);
+        }
+        if (result) {
+            var hashedPassword = crypto.createHash('sha256').update(String(credentials.password)).digest('hex');
+            if (hashedPassword === result.password) {
+                return callback(null, result);
+            }
+            return callback('Password mismatch.');
+        }
+        return callback('User not found.');
+    });
+};
