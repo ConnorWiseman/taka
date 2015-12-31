@@ -779,7 +779,10 @@ var taka = taka || function(settings) {
                 if (typeof data.author !== 'undefined') {
                     if (typeof data.author.URL !== 'undefined' && data.author.URL !== null) {
                         var authorLink = new Element('a');
-                        authorLink.setAttribute('href', data.author.URL);
+                        authorLink.setAttributes({
+                            'href': data.author.URL,
+                            'target': '_blank'
+                        });
                         authorLink.appendText(data.author.username);
                         authorElement.append(authorLink);
                     }
@@ -1392,12 +1395,10 @@ var taka = taka || function(settings) {
                 event.preventDefault();
                 var avatarValue = avatarInput.HTMLElement.value,
                     urlValue = urlInput.HTMLElement.value;
-                if (avatarValue !== '' && urlValue !== '') {
-                    socket.emit('updateSettings', {
-                        'avatar': (avatarValue !== '') ? avatarValue : undefined,
-                        'URL': (urlValue !== '') ? urlValue : undefined
-                    });
-                }
+                socket.emit('updateSettings', {
+                    'avatar': (avatarValue !== '') ? avatarValue : undefined,
+                    'URL': (urlValue !== '') ? urlValue : undefined
+                });
             });
             settingsForm.append(updateButton);
 
@@ -1552,6 +1553,7 @@ var taka = taka || function(settings) {
              */
             var updateOnlineUsersList = function() {
                 onlineUsersList.removeChildren();
+                console.log(settings.onlineUsers);
 
 
                 var sortedOnlineUsersList = Object.keys(settings.onlineUsers).sort();
@@ -1560,14 +1562,57 @@ var taka = taka || function(settings) {
                 for (var i = 0, numUsers = sortedOnlineUsersList.length; i < numUsers; i++) {
                     var listItem = new Element('li');
                     listItem.css({
-                        'listStyle': 'none'
+                        'listStyle': 'none',
+                        'margin': '0 0 2px 0'
                     });
-                    var listItemText = sortedOnlineUsersList[i],
+
+
+                    var avatarSrc = settings.onlineUsers[sortedOnlineUsersList[i]].avatar;
+
+
+                    if (typeof avatarSrc === 'undefined') {
+                        avatarSrc = settings.defaultAvatar;
+                    }
+
+
+                    var avatarElement = new Element('img');
+                    avatarElement.setAttributes({
+                        'height': '16',
+                        'src': avatarSrc,
+                        'width': '16'
+                    });
+                    avatarElement.css({
+                        'margin': '0 ' + settings.spacing + 'px -2px 0',
+                        'position': 'relative',
+                        'top': '2px'
+                    });
+                    listItem.append(avatarElement);
+
+
+                    var URL = settings.onlineUsers[sortedOnlineUsersList[i]].URL,
+                        listItemText = sortedOnlineUsersList[i],
                         instanceCount = settings.onlineUsers[sortedOnlineUsersList[i]].instances.length;
+
+
                     if (instanceCount > 1) {
                         listItemText += ' (' + instanceCount + ')';
                     }
-                    listItem.text(listItemText);
+
+
+                    if (typeof URL !== 'undefined') {
+                        var listItemLink = new Element('a');
+                        listItemLink.setAttributes({
+                            'href': URL,
+                            'target': '_blank'
+                        });
+                        listItemLink.text(listItemText);
+                        listItem.append(listItemLink);
+                    }
+                    else { 
+                        listItem.appendText(listItemText);
+                    }
+
+
                     onlineUsersList.append(listItem);
                 }
 

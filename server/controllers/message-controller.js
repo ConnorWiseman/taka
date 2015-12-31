@@ -80,7 +80,6 @@ var fetchMessages = function(query, socket, callback) {
         if (error) {
             return callback(error);
         }
-        console.log('result', result);
 
 
         return callback(null, result);

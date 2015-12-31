@@ -45,8 +45,11 @@ module.exports = function(socket, next) {
 
 
         if (typeof data.user !== 'undefined' && data.user !== null) {
+            socket.session.user_id = data.user._id;
             socket.session.role = data.user.role;
             socket.session.username = data.user.username;
+            socket.session.avatar = data.user.avatar;
+            socket.session.URL = data.user.URL;
         }
         else {
             socket.session.username = Session.guestName(data.id);

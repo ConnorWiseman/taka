@@ -243,8 +243,7 @@ module.exports = function(io) {
                     if (typeof settings.avatar !== 'undefined' && settings.avatar !== '') {
                         settingsUpdate.avatar = settings.avatar;
                     }
-                    
-                    console.log(settingsUpdate);
+
 
                     io.emit('settingsUpdate', settingsUpdate);
                 });
