@@ -155,7 +155,6 @@ module.exports = function(io) {
                     oldName: oldName,
                     newName: currentSocket.session.username
                 });
-                console.log(OnlineUsers.list());
             });
         };
 
@@ -221,6 +220,35 @@ module.exports = function(io) {
          */
         socket.on('signOut', function() {
             return bindUserToSession(socket.session.id, null);
+        });
+
+
+        /**
+         * @readonly
+         */
+        socket.on('updateSettings', function(settings) {
+            console.log(settings);
+            if (Object.keys(settings).length > 0) {
+                User.update(socket.session.username, settings, function(error, result) {
+                    var settingsUpdate = {
+                        username: socket.session.username
+                    };
+
+
+                    if (typeof settings.URL !== 'undefined' && settings.URL !== '') {
+                        settingsUpdate.URL = settings.URL;
+                    }
+
+
+                    if (typeof settings.avatar !== 'undefined' && settings.avatar !== '') {
+                        settingsUpdate.avatar = settings.avatar;
+                    }
+                    
+                    console.log(settingsUpdate);
+
+                    io.emit('settingsUpdate', settingsUpdate);
+                });
+            }
         });
 
 

@@ -1344,6 +1344,70 @@ var taka = taka || function(settings) {
             container.append(onlineUsersWindow);
 
 
+            var settingsWindow = popupWindow('User Settings', 160, 148);
+            var settingsForm = new Element('form');
+            settingsForm.on('submit', function(event) {
+                event.preventDefault();
+            });
+            settingsForm.css({
+                'padding': (settings.spacing * 2) + 'px'
+            });
+
+
+            var avatarInput = new Element('input');
+            avatarInput.css({
+                'boxSizing': 'border-box',
+                'display': 'block',
+                'padding': settings.spacing + 'px',
+                'margin': '0 auto ' + (settings.spacing * 2) + 'px',
+                'width': '140px'
+            });
+            avatarInput.setAttribute('placeholder', 'Avatar');
+            settingsForm.append(avatarInput);
+
+
+            var urlInput = new Element('input');
+            urlInput.css({
+                'boxSizing': 'border-box',
+                'display': 'block',
+                'padding': settings.spacing + 'px',
+                'margin': '0 auto ' + (settings.spacing * 2) + 'px',
+                'width': '140px'
+            });
+            urlInput.setAttribute('placeholder', 'URL');
+            settingsForm.append(urlInput);
+
+
+            var updateButton = new Element('button');
+            updateButton.css({
+                'boxSizing': 'border-box',
+                'display': 'inline-block',
+                'padding': '2px',
+                'margin': '0',
+                'textAlign': 'center',
+                'width': '140px'
+            });
+            updateButton.text('Update');
+            updateButton.on('click', function(event) {
+                event.preventDefault();
+                var avatarValue = avatarInput.HTMLElement.value,
+                    urlValue = urlInput.HTMLElement.value;
+                if (avatarValue !== '' && urlValue !== '') {
+                    socket.emit('updateSettings', {
+                        'avatar': (avatarValue !== '') ? avatarValue : undefined,
+                        'URL': (urlValue !== '') ? urlValue : undefined
+                    });
+                }
+            });
+            settingsForm.append(updateButton);
+
+
+            settingsWindow.append(settingsForm);
+
+
+            container.append(settingsWindow);
+
+
             var chatMenu = new Element('div');
             chatMenu.css({
                 'clear': 'both',

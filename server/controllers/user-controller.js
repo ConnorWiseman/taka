@@ -53,6 +53,7 @@ exports.authorize = function(credentials, callback) {
         if (error) {
             return callback(error);
         }
+        console.log(result);
 
 
         if (result) {
@@ -67,5 +68,35 @@ exports.authorize = function(credentials, callback) {
 
 
         return callback('User not found.');
+    });
+};
+
+
+/**
+ * Updates a specified user's unformation.
+ * @param {string} username       - The username of the user to be updated.
+ * @param {Object} credentials    - An object containing information to update.
+ * @param {nodeCallback} callback - A callback function to execute.
+ * @readonly
+ */
+exports.update = function(username, information, callback) {
+    var query = {
+        username: username
+    };
+
+
+    var update = {};
+    for (var property in information) {
+        update[property] = information[property];
+    }
+
+
+    UserModel.update(query, update, function(error, result) {
+        if (error) {
+            return callback(error);
+        }
+
+
+        return callback(null, result);
     });
 };

@@ -19,13 +19,15 @@ var permissions = {
     user: {
         loadMessages: true,
         sendMessage: true,
-        signOut: true
+        signOut: true,
+        updateSettings: true
     },
     mod: {
         loadMessages: true,
         deleteMessage: true,
         sendMessage: true,
         signOut: true,
+        updateSettings: true,
         viewIP: true
     },
     admin: {
@@ -33,6 +35,7 @@ var permissions = {
         deleteMessage: true,
         sendMessage: true,
         signOut: true,
+        updateSettings: true,
         viewIP: true
     }
 };
