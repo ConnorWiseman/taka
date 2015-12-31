@@ -63,7 +63,8 @@ module.exports = function(io) {
 
 
                 if (typeof result.author !== 'undefined' && result.author !== null) {
-                    publicMessage.author = staffMessage.author = result.author;
+                    publicMessage.author = result.author;
+                    staffMessage.author = result.author;
                 }
                 else {
                     publicMessage.author = staffMessage.author = {
@@ -74,7 +75,8 @@ module.exports = function(io) {
 
                 if (socket.isStaff()) {
                     socket.emit('confirmMessage', staffMessage);
-                } else {
+                }
+                else {
                     socket.emit('confirmMessage', publicMessage);
                 }
                 socket.broadcast.to('public').emit('newMessage', publicMessage);
@@ -123,10 +125,6 @@ module.exports = function(io) {
                 if (socket.isStaff()) {
                     socket.leave('public');
                     socket.join('staff');
-                }
-                else {
-                    socket.leave('staff');
-                    socket.join('public');
                 }
 
 

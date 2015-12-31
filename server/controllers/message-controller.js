@@ -45,7 +45,7 @@ exports.add = function(session, message, callback) {
 
 
         if (session.user_id) {
-            newMessage.populate('author', '-password', function(error) {
+            return newMessage.populate('author', '-password', function(error) {
                 return callback(null, newMessage);
             });
         }

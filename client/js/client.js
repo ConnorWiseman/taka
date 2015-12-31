@@ -165,13 +165,13 @@ var taka = taka || function(settings) {
         var test = document.createElement('span');
         test.classList.add('fa');
         if (window.getComputedStyle(test).fontFamily !== 'FontAwesome') {
-            var link = document.createElement('link');
-            link.addEventListener('load', function(event) {
+            var stylesheet = document.createElement('link');
+            stylesheet.addEventListener('load', function(event) {
                 return callback();
             });
-            link.setAttribute('rel', 'stylesheet');
-            link.setAttribute('href', 'https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css');
-            document.head.appendChild(link);
+            stylesheet.setAttribute('rel', 'stylesheet');
+            stylesheet.setAttribute('href', 'https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css');
+            document.head.appendChild(stylesheet);
         }
         else {
             return callback();
@@ -374,6 +374,18 @@ var taka = taka || function(settings) {
          */
         this.addClass = function(className) {
             this.HTMLElement.classList.add(String(className));
+            return this;
+        };
+
+
+        /**
+         * Removes a class name to an existing object.
+         * @param {string} className - The name of the class to remove.
+         * @returns {this}
+         * @readonly
+         */
+        this.removeClass = function(className) {
+            this.HTMLElement.classList.remove(String(className));
             return this;
         };
 
@@ -765,9 +777,9 @@ var taka = taka || function(settings) {
 
 
                 if (typeof data.author !== 'undefined') {
-                    if (typeof data.author.link !== 'undefined' && data.author.link !== null) {
+                    if (typeof data.author.URL !== 'undefined' && data.author.URL !== null) {
                         var authorLink = new Element('a');
-                        authorLink.setAttribute('href', data.author.link);
+                        authorLink.setAttribute('href', data.author.URL);
                         authorLink.appendText(data.author.username);
                         authorElement.append(authorLink);
                     }
@@ -1400,6 +1412,33 @@ var taka = taka || function(settings) {
             container.append(chatMenu);
 
 
+            var sessionData = function(data) {
+                console.log(data);
+                setCookie('taka-session_id', data.id);
+                settings.role = data.role;
+
+
+                if (settings.role === 'guest') {
+                    userControls.removeClass('fa-user-times');
+                    userControls.addClass('fa-user-plus');
+                    settingControls.css({
+                        'display': 'none'
+                    });
+                }
+                else {
+                    userControls.removeClass('fa-user-plus');
+                    userControls.addClass('fa-user-times');
+                    settingControls.css({
+                        'display': 'inline-block'
+                    });
+                }
+
+
+                usernameInput.setAttribute('value', '');
+                passwordInput.setAttribute('value', '');
+            };
+
+
             /**
              * Socket event functions wrapper.
              * @namespace
@@ -1419,30 +1458,19 @@ var taka = taka || function(settings) {
                  * @readonly
                  */
                 sessionStart: function(data) {
-                    setCookie('taka-session_id', data.id);
-                    settings.role = data.role;
-
-
-                    if (settings.role === 'guest') {
-                        userControls.addClass('fa-user-plus');
-                    }
-                    else {
-                        userControls.addClass('fa-user-times');
-                    }
-
-
-                    console.log(data);
+                    sessionData(data);
                     enableTextarea();
                 },
 
 
                 /**
-                 *
+                 * Updates session data with new session information from the server.
+                 * @param data - Current session data in JSON format.
+                 * @readonly
                  */
                 sessionUpdate: function(data) {
-                    setCookie('taka-session_id', data.id);
-                    settings.role = data.role;
-                    console.log(data);
+                    sessionData(data);
+                    signInWindow.hide();
                 },
 
 
