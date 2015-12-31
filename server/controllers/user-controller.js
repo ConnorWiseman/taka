@@ -53,7 +53,6 @@ exports.authorize = function(credentials, callback) {
         if (error) {
             return callback(error);
         }
-        console.log(result);
 
 
         if (result) {

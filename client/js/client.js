@@ -706,7 +706,7 @@ var taka = taka || function(settings) {
                 avatar.addClass('avatar');
                 avatar.setAttributes({
                     'width': '35',
-                   ' height': '35',
+                    'height': '35',
                     'src': avatarSrc
                 });
                 avatar.css({
@@ -782,6 +782,9 @@ var taka = taka || function(settings) {
                         authorLink.setAttributes({
                             'href': data.author.URL,
                             'target': '_blank'
+                        });
+                        authorLink.css({
+                            'textDecoration': 'none'
                         });
                         authorLink.appendText(data.author.username);
                         authorElement.append(authorLink);
@@ -1539,6 +1542,8 @@ var taka = taka || function(settings) {
                     settingControls.css({
                         'display': 'inline-block'
                     });
+                    avatarInput.HTMLElement.value = data.avatar;
+                    urlInput.HTMLElement.value = data.URL;
                 }
 
 
@@ -1604,6 +1609,9 @@ var taka = taka || function(settings) {
                         listItemLink.setAttributes({
                             'href': URL,
                             'target': '_blank'
+                        });
+                        listItemLink.css({
+                            'textDecoration': 'none'
                         });
                         listItemLink.text(listItemText);
                         listItem.append(listItemLink);

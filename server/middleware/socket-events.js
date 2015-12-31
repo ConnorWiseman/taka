@@ -227,7 +227,6 @@ module.exports = function(io) {
          * @readonly
          */
         socket.on('updateSettings', function(settings) {
-            console.log(settings);
             if (Object.keys(settings).length > 0) {
                 User.update(socket.session.username, settings, function(error, result) {
                     var settingsUpdate = {

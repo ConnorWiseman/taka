@@ -28,7 +28,9 @@ module.exports = function(socket, next) {
         'channel':  socket.session.channel,
         'id':       socket.session.id,
         'role':     socket.session.role,
-        'username': socket.session.username
+        'username': socket.session.username,
+        'avatar':   socket.session.avatar,
+        'URL':      socket.session.URL
     };
     socket.emit('sessionStart', sessionData);
 
