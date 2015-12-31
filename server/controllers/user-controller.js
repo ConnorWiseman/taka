@@ -53,13 +53,19 @@ exports.authorize = function(credentials, callback) {
         if (error) {
             return callback(error);
         }
+
+
         if (result) {
             var hashedPassword = crypto.createHash('sha256').update(String(credentials.password)).digest('hex');
             if (hashedPassword === result.password) {
                 return callback(null, result);
             }
+
+
             return callback('Password mismatch.');
         }
+
+
         return callback('User not found.');
     });
 };

@@ -18,6 +18,7 @@ mongoose.connection.on('connected', function() {
     io.use(Middleware.Authorization);
     io.use(Middleware.Channels);
     io.use(Middleware.InitialEmit);
+    io.use(Middleware.OnlineList);
     io.use(Middleware.SocketEvents);
 
 

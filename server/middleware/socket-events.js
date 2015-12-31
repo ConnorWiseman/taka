@@ -4,7 +4,8 @@
 var Session = require('../controllers/session-controller.js'),
     Ban = require('../controllers/ban-controller.js'),
     User = require('../controllers/user-controller.js'),
-    Message = require('../controllers/message-controller.js');
+    Message = require('../controllers/message-controller.js'),
+    OnlineUsers = require('../utilities/online-users.js');
 
 
 /**
@@ -17,23 +18,6 @@ module.exports = function(io) {
 
 
     /**
-     * Emits a specified event with specified data to every socket in a specified room.
-     * @readonly
-     */
-    var emitToRoom = function(room, eventName, data) {
-        var room = io.sockets.adapter.rooms[room];
-        if (room) {
-            for (var socket in room) {
-                io.to(socket).emit(eventName, data);
-            }
-        }
-    };
-
-
-    var OnlineUsers = require('../utilities/online-users.js');
-
-
-    /**
      * Attaches event listeners to the current socket.
      * 
      * @param socket - An object representing the current websocket connection.
@@ -42,8 +26,6 @@ module.exports = function(io) {
      */
     return function(socket, next) {
 
-        OnlineUsers.add(socket);
-        //console.log(OnlineUsers.list());
 
         /**
          * Deletes a specified message from the chat history.
@@ -119,7 +101,8 @@ module.exports = function(io) {
 
 
         /**
-         * Binds a specified user to a specified session ID.
+         * Binds a specified user to a specified session ID across all connected sockets
+         * from the same client.
          * @param {string} session_id - The session ID to bind to.
          * @param {Object} user       - A user from the database.
          * @readonly
@@ -168,7 +151,11 @@ module.exports = function(io) {
 
 
                 OnlineUsers.rename(oldName, currentSocket.session.username);
-                //console.log(OnlineUsers.list());
+                io.emit('onlineUsersRename', {
+                    oldName: oldName,
+                    newName: currentSocket.session.username
+                });
+                console.log(OnlineUsers.list());
             });
         };
 
@@ -243,7 +230,10 @@ module.exports = function(io) {
          */
         socket.on('disconnect', function() {
             OnlineUsers.remove(socket);
-            //console.log(OnlineUsers.list());
+            socket.broadcast.emit('onlineUsersRemove', {
+                username: socket.session.username,
+                instance: socket.id
+            });
         });
 
 

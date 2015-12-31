@@ -1513,6 +1513,86 @@ var taka = taka || function(settings) {
 
 
                 /**
+                 * Updates the list of currently online users with the most recent data from the server.
+                 * @param data - The current list of online users.
+                 * @readonly
+                 */
+                onlineUsers: function(data) {
+                    settings.onlineUsers = data;
+                    onlineUsersTotal.text(Object.keys(data).length);
+                    console.log(settings.onlineUsers);
+                },
+
+
+                /**
+                 * Adds a specified socket instance to the specified client entry
+                 * in the online users list.
+                 * @param data          - An object containing a socket-client value pair.
+                 *        data.username - The client entry to add a socket instance to.
+                 *        data.instance - The socket instance to be added.
+                 * @readonly
+                 */
+                onlineUsersAdd: function(data) {
+                    if (typeof settings.onlineUsers[data.username] === 'undefined') {
+                        settings.onlineUsers[data.username] = {
+                            instances: []
+                        };
+                    }
+
+
+                    settings.onlineUsers[data.username].instances.push(data.instance);
+                    onlineUsersTotal.text(Object.keys(settings.onlineUsers).length);
+                },
+
+
+                /**
+                 * Removes the specified socket instance from the specified client entry
+                 * in the online users list. Deletes the client entry if no socket instances
+                 * are associated with it.
+                 * @param data          - An object containing a socket-client value pair.
+                 *        data.username - The client entry to remove a socket instance from.
+                 *        data.instance - The socket instance to be removed.
+                 * @readonly
+                 */
+                onlineUsersRemove: function(data) {
+                    var instanceIndex = settings.onlineUsers[data.username].instances.indexOf(data.instance);
+
+
+                    if (instanceIndex > -1) {
+                        settings.onlineUsers[data.username].instances.splice(instanceIndex, 1);
+                    }
+
+
+                    if (settings.onlineUsers[data.username].instances.length === 0) {
+                        delete settings.onlineUsers[data.username];
+                    }
+
+
+                    onlineUsersTotal.text(Object.keys(settings.onlineUsers).length);
+                },
+
+
+                /**
+                 * Renames a specified client entry in the online users list.
+                 * @param data         - An object containing an old name-new name value pair.
+                 *        data.oldName - The client entry to be renamed.
+                 *        data.newName - The name to use for the new client entry.
+                 * @readonly
+                 */
+                onlineUsersRename: function(data) {
+                    if (data.oldName === data.newName) {
+                        return;
+                    }
+
+
+                    if (settings.onlineUsers.hasOwnProperty(data.oldName)) {
+                        settings.onlineUsers[data.newName] = settings.onlineUsers[data.oldName];
+                        delete settings.onlineUsers[data.oldName];
+                    }
+                },
+
+
+                /**
                  * Populates the chat history with the most recent messages.
                  * @param data - An array of message JSON objects.
                  * @readonly

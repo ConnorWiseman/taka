@@ -1,7 +1,8 @@
 'use strict';
 
 
-var Message = require('../controllers/message-controller.js');
+var Message = require('../controllers/message-controller.js'),
+    OnlineUsers = require('../utilities/online-users.js');
 
 
 /**

@@ -9,7 +9,7 @@ var mongoose = require('mongoose');
  * @property {string} username - This user's username.
  * @property {string} password - A SHA256 hash of this user's password.
  * @property {string} avatar   - A user-specified image URL.
- * @property {string} link     - A user-specified URL.
+ * @property {string} URL      - A user-specified URL.
  * @property {string} role     - This user's role.
  * @readonly
  */
@@ -32,7 +32,7 @@ var mongoose = require('mongoose');
         sparse: true,
         type: String
     },
-    link: {
+    URL: {
         maxlength: 255,
         sparse: true,
         type: String

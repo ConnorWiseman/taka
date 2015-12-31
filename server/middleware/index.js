@@ -24,6 +24,7 @@ module.exports = function(io) {
         Authorization: require('./authorization.js'),
         Channels: require('./channels.js'),
         InitialEmit: require('./initial-emit.js'),
+        OnlineList: require('./online-list.js'),
         SocketEvents: require('./socket-events.js')(io)
     };
 
