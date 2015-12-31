@@ -1098,6 +1098,10 @@ var taka = taka || function(settings) {
 
 
             popupWindowContents.addClass('popup-window-contents');
+            popupWindowContents.css({
+                'top': '50%',
+                'left': '50%'
+            });
             popupWindow.append(popupWindowContents);
 
 
@@ -1269,8 +1273,6 @@ var taka = taka || function(settings) {
                     'borderRadius': '2px',
                     'overflow': 'hidden',
                     'position': 'absolute',
-                    'top': '50%',
-                    'left': '50%',
                     'margin': '-74px 0 0 -80px',
                     'boxShadow': 'rgba(0, 0, 0, 0.7) 0 0 5px'
                 });
