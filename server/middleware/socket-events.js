@@ -140,7 +140,7 @@ module.exports = function(io) {
                     if (!sessionResult.user) {
                         currentSocket.session.user_id = undefined;
                         currentSocket.session.role = 'guest';
-                        currentSocket.session.username = Session.guestName(socket.session.id);
+                        currentSocket.session.username = Session.guestName(currentSocket.session.id);
                     }
                     else {
                         currentSocket.session.user_id = sessionResult.user._id;
