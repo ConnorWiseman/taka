@@ -817,8 +817,8 @@ var taka = taka || function(settings) {
              * @readonly
              */
             var formatMessageContents = function(message) {
-                var boldRegex = /(\*\*|__)(\S{1,})\1/gi,
-                    italicRegex = /(\*|_)(\S{1,})\1/gi,
+                var boldRegex = /(\*\*|__)(.{1,})\1/gi,
+                    italicRegex = /(\*|_)(.{1,})\1/gi,
                     strikeRegex = /(\~)(\S{1,})\1/gi;
 
 
@@ -1441,7 +1441,6 @@ var taka = taka || function(settings) {
 
 
             chatMenu.append(rightMenu);
-            container.append(chatMenu);
 
 
             /**
@@ -1449,11 +1448,13 @@ var taka = taka || function(settings) {
              * @readonly
              */
             var sessionData = function(data) {
+                console.log(data);
                 setCookie('taka-session_id', data.id);
                 settings.role = data.role;
 
 
                 if (settings.role === 'guest') {
+                    userControls.setAttribute('title', 'Sign In / Register');
                     userControls.removeClass('fa-user-times');
                     userControls.addClass('fa-user-plus');
                     settingControls.css({
@@ -1461,6 +1462,7 @@ var taka = taka || function(settings) {
                     });
                 }
                 else {
+                    userControls.setAttribute('title', 'Sign Out');
                     userControls.removeClass('fa-user-plus');
                     userControls.addClass('fa-user-times');
                     settingControls.css({
@@ -1495,6 +1497,7 @@ var taka = taka || function(settings) {
                 sessionStart: function(data) {
                     sessionData(data);
                     enableTextarea();
+                    container.append(chatMenu);
                 },
 
 
@@ -1552,7 +1555,7 @@ var taka = taka || function(settings) {
                  * @readonly
                  */
                 confirmMessage: function(data) {
-                    addMessageAndScroll(data);
+                    addMessageAndScroll(data, true);
                     enableTextarea();
                     clearTextarea();
                     focusTextarea();

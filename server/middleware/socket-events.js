@@ -17,6 +17,23 @@ module.exports = function(io) {
 
 
     /**
+     * Emits a specified event with specified data to every socket in a specified room.
+     * @readonly
+     */
+    var emitToRoom = function(room, eventName, data) {
+        var room = io.sockets.adapter.rooms[room];
+        if (room) {
+            for (var socket in room) {
+                io.to(socket).emit(eventName, data);
+            }
+        }
+    };
+
+
+    var OnlineUsers = require('../utilities/online-users.js');
+
+
+    /**
      * Attaches event listeners to the current socket.
      * 
      * @param socket - An object representing the current websocket connection.
@@ -25,6 +42,8 @@ module.exports = function(io) {
      */
     return function(socket, next) {
 
+        OnlineUsers.add(socket);
+        //console.log(OnlineUsers.list());
 
         /**
          * Deletes a specified message from the chat history.
@@ -107,32 +126,49 @@ module.exports = function(io) {
          */
         var bindUserToSession = function(session_id, user) {
             Session.regenerate(session_id, user, function(error, sessionResult) {
-                socket.session.id = sessionResult.id;
+                var oldName = socket.session.username;
 
 
-                if (!sessionResult.user) {
-                    socket.session.user_id = undefined;
-                    socket.session.role = 'guest';
-                    socket.session.username = Session.guestName(socket.session.id);
+                var socketList = io.sockets.adapter.rooms[oldName];
+
+
+                for (var socket_id in socketList) {
+                    var currentSocket = io.sockets.connected[socket_id];
+                    currentSocket.session.id = sessionResult.id;
+
+
+                    if (!sessionResult.user) {
+                        currentSocket.session.user_id = undefined;
+                        currentSocket.session.role = 'guest';
+                        currentSocket.session.username = Session.guestName(socket.session.id);
+                    }
+                    else {
+                        currentSocket.session.user_id = sessionResult.user._id;
+                        currentSocket.session.role = sessionResult.user.role;
+                        currentSocket.session.username = sessionResult.user.username;
+                    }
+
+
+                    currentSocket.leave(oldName);
+                    currentSocket.join(currentSocket.session.username);
+
+
+                    if (currentSocket.isStaff()) {
+                        currentSocket.leave('public');
+                        currentSocket.join('staff');
+                    }
+
+
+                    currentSocket.emit('sessionUpdate', {
+                        id:       currentSocket.session.id,
+                        role:     currentSocket.session.role,
+                        username: currentSocket.session.username
+                    });
                 }
-                else {
-                    socket.session.user_id = sessionResult.user._id;
-                    socket.session.role = sessionResult.user.role;
-                    socket.session.username = sessionResult.user.username;
-                }
 
 
-                if (socket.isStaff()) {
-                    socket.leave('public');
-                    socket.join('staff');
-                }
-
-
-                socket.emit('sessionUpdate', {
-                    id:       socket.session.id,
-                    role:     socket.session.role,
-                    username: socket.session.username
-                });
+                OnlineUsers.rename(oldName, currentSocket.session.username);
+                //console.log(OnlineUsers.list());
             });
         };
 
@@ -198,6 +234,16 @@ module.exports = function(io) {
          */
         socket.on('signOut', function() {
             return bindUserToSession(socket.session.id, null);
+        });
+
+
+        /**
+         * Removes the socket from the online users list when it disconnects.
+         * @readonly
+         */
+        socket.on('disconnect', function() {
+            OnlineUsers.remove(socket);
+            //console.log(OnlineUsers.list());
         });
 
 
