@@ -1017,124 +1017,13 @@ var taka = taka || function(settings) {
             });
 
 
-            var beingDragged = false,
-                mousePosition = {
-                    x: 0,
-                    y: 0
-                },
-                popupPosition = {
-                    x: 0,
-                    y: 0
-                };
-
-
-            document.addEventListener('mousemove', function(event) {
-                mousePosition.x = event.clientX;
-                mousePosition.y = event.clientY;
-
-
-                var widthOffset = Number(popupWindow.HTMLElement.style.width.split('px')[0]),
-                    heightOffset = Number(popupWindow.HTMLElement.style.height.split('px')[0]);
-
-
-                if (beingDragged) {
-                    popupWindow.css({
-                        'left': (mousePosition.x - popupPosition.x + (widthOffset / 2)) + 'px',
-                        'top': (mousePosition.y - popupPosition.y + (heightOffset / 2)) + 'px',
-                    });
-                    if ((mousePosition.y - 24) < 0) {
-                        popupWindow.css({
-                            'top': (heightOffset / 2) + 'px'
-                        });
-                    }
-                    if ((mousePosition.x - (widthOffset / 2) - 24) < 0) {
-                        popupWindow.css({
-                            'left': (widthOffset / 2) + 'px'
-                        });
-                    }
-                    if ((mousePosition.y + heightOffset) > document.documentElement.clientHeight) {
-                        popupWindow.css({
-                            'top': document.documentElement.clientHeight - (heightOffset / 2) - 16 + 'px'
-                        });
-                    }
-                    if ((mousePosition.x + widthOffset) > document.documentElement.clientWidth) {
-                        popupWindow.css({
-                            'left': document.documentElement.clientWidth - (widthOffset / 2) - 16 + 'px'
-                        });
-                    }
-                }
-            });
-            document.addEventListener('mouseup', function(event) {
-                beingDragged = false;
-            });
-
-
-            var popupWindow = new Element('div');
-            popupWindow.addClass('popup-window');
-            popupWindow.css({
-                'height': settings.height + 'px',
-                'left': '0',
-                'margin': '0 0 -' + settings.height + 'px',
-                'position': 'absolute',
-                'opacity': '0',
-                'top': '0',
-                'transition': 'opacity 0.15s ease-in',
-                'width': settings.width + 'px',
-                'zIndex': '-2'
-            });
-
-
-            /**
-             * Shows the popup window.
-             * @readonly
-             */
-            var showPopupWindow = function() {
-                popupWindow.css({
-                    'opacity': '1',
-                    'zIndex': '2'
-                });
-            };
-
-
-            /**
-             * Hides the popup window.
-             * @readonly
-             */
-            var hidePopupWindow = function() {
-                popupWindow.css({
-                    'opacity': '0'
-                });
-                setTimeout(function() {
-                    popupWindow.css({
-                        zIndex: '-2'
-                    })
-                }, 350);
-            };
-
-
-            popupWindow.addClass('popup-window');
-            popupWindow.css({
-                'top': '50%',
-                'left': '50%'
-            });
-
-
-            document.addEventListener('keyup', function(event) {
-                if (event.keyCode === 27) {
-                    hidePopupWindow();
-                }
-            });
-
-
-            container.append(popupWindow);
-
-
             /**
              * Creates a title for the contents of the popup window.
-             * @param {string} titleText - The title text.
+             * @param {string} titleText     - The title text.
+             * @param {Object} parentElement - A reference to the parent element.
              * @returns {Object} - Element.<HTMLElement>
              */
-            var popupWindowTitle = function(titleText) {
+            var popupTitle = function(titleText, parentElement) {
                 var title = new Element('div');
                 title.addClass('popup-window-title');
                 title.css({
@@ -1165,20 +1054,237 @@ var taka = taka || function(settings) {
                 });
                 closePopup.on('click', function(event) {
                     event.preventDefault();
-                    hidePopupWindow();
+                    parentElement.hide();
                 });
                 title.append(closePopup);
 
 
                 title.on('mousedown', function(event) {
-                    beingDragged = true;
-                    popupPosition.x = mousePosition.x - popupWindow.HTMLElement.offsetLeft;
-                    popupPosition.y = mousePosition.y - popupWindow.HTMLElement.offsetTop;
+                    parentElement.beingDragged = true;
+                    container.append(parentElement);
+                    parentElement.position.x = parentElement.mousePosition.x - parentElement.HTMLElement.offsetLeft;
+                    parentElement.position.y = parentElement.mousePosition.y - parentElement.HTMLElement.offsetTop;
                 });
                 
                 
                 return title;
             };
+
+
+            /**
+             * Creates a popup window.
+             * @param {string} titleText - The title text.
+             * @param {number} width     - The width of the popup.
+             * @param {number} height    - The height of the popup.
+             * @readonly
+             */
+            var popupWindow = function(titleText, width, height) {
+                var popup = new Element('div');
+
+
+                popup.beingDragged = false;
+                document.addEventListener('mouseup', function(event) {
+                    popup.beingDragged = false;
+                });
+
+
+                popup.position = {
+                    x: 0,
+                    y: 0
+                };
+                popup.mousePosition = {
+                    x: 0,
+                    y: 0
+                };
+
+
+                document.addEventListener('mousemove', function(event) {
+                    popup.mousePosition.x = event.clientX;
+                    popup.mousePosition.y = event.clientY;
+
+
+                    var widthOffset = Number(popup.HTMLElement.style.width.split('px')[0]),
+                        heightOffset = Number(popup.HTMLElement.style.height.split('px')[0]);
+
+
+                    if (popup.beingDragged) {
+                        popup.css({
+                            'left': (popup.mousePosition.x - popup.position.x + (widthOffset / 2)) + 'px',
+                            'top': (popup.mousePosition.y - popup.position.y + (heightOffset / 2)) + 'px',
+                        });
+                        if ((popup.mousePosition.y - 24) < 0) {
+                            popup.css({
+                                'top': (heightOffset / 2) + 'px'
+                            });
+                        }
+                        if ((popup.mousePosition.x - (widthOffset / 2) - 24) < 0) {
+                            popup.css({
+                                'left': (widthOffset / 2) + 'px'
+                            });
+                        }
+                        if ((popup.mousePosition.y + heightOffset) > document.documentElement.clientHeight) {
+                            popup.css({
+                                'top': document.documentElement.clientHeight - (heightOffset / 2) - 16 + 'px'
+                            });
+                        }
+                        if ((popup.mousePosition.x + widthOffset) > document.documentElement.clientWidth) {
+                            popup.css({
+                                'left': document.documentElement.clientWidth - (widthOffset / 2) - 16 + 'px'
+                            });
+                        }
+                    }
+                });
+
+
+                popup.append(popupTitle(titleText, popup));
+                popup.addClass('popup-window');
+                popup.css({
+                    'backgroundColor': '#ffffff',
+                    'borderRadius': '2px',
+                    'boxShadow': 'rgba(0, 0, 0, 0.7) 0 0 5px',
+                    'height': height + 'px',
+                    'left': '50%',
+                    'margin': '-' + (height / 2) + 'px 0 0 -' + (width / 2) + 'px',
+                    'opacity': '0',
+                    'overflow': 'hidden',
+                    'position': 'absolute',
+                    'top': '50%',
+                    'transition': 'opacity 0.15s ease-in',
+                    'width': width + 'px',
+                    'zIndex': '-2'
+                });
+
+
+                /**
+                 * Shows the popup window.
+                 * @readonly
+                 */
+                popup.show = function() {
+                    this.css({
+                        'opacity': '1',
+                        'zIndex': '2'
+                    });
+                };
+
+
+                /**
+                 * Hides the popup window.
+                 * @readonly
+                 */
+                popup.hide = function() {
+                    popup.css({
+                        'opacity': '0'
+                    });
+                    setTimeout(function() {
+                        popup.css({
+                            'zIndex': '-2'
+                        })
+                    }, 350);
+                };
+
+
+                document.addEventListener('keyup', function(event) {
+                    if (event.keyCode === 27) {
+                        popup.hide();
+                    }
+                });
+
+
+                return popup;
+            };
+
+
+            var signInWindow = popupWindow('Sign In / Register', 160, 148);
+
+
+            var signInForm = new Element('form');
+            signInForm.on('submit', function(event) {
+                event.preventDefault();
+            });
+            signInForm.css({
+                'padding': (settings.spacing * 2) + 'px'
+            });
+
+
+            var usernameInput = new Element('input');
+            usernameInput.css({
+                'boxSizing': 'border-box',
+                'display': 'block',
+                'padding': settings.spacing + 'px',
+                'margin': '0 auto ' + (settings.spacing * 2) + 'px',
+                'width': '140px'
+            });
+            usernameInput.setAttribute('placeholder', 'Username');
+            signInForm.append(usernameInput);
+
+
+            var passwordInput = new Element('input');
+            passwordInput.css({
+                'boxSizing': 'border-box',
+                'display': 'block',
+                'padding': settings.spacing + 'px',
+                'margin': '0 auto ' + (settings.spacing * 2) + 'px',
+                'width': '140px'
+            });
+            passwordInput.setAttributes({
+                'placeholder': 'Password',
+                'type': 'password'
+            });
+            signInForm.append(passwordInput);
+
+
+            var buttonContainer = new Element('div'),
+                signInButton = new Element('button'),
+                registerButton = new Element('button');
+
+
+            buttonContainer.css({
+                'margin': '0 auto',
+                'width': '140px'
+            });
+
+
+            signInButton.css({
+                'boxSizing': 'border-box',
+                'display': 'inline-block',
+                'padding': '2px',
+                'margin': '0',
+                'textAlign': 'center',
+                'width': '68px'
+            });
+            signInButton.text('Sign In');
+            signInButton.on('click', function(event) {
+                event.preventDefault();
+                console.log('signing in');
+            });
+            buttonContainer.append(signInButton);
+
+
+            registerButton.css({
+                'boxSizing': 'border-box',
+                'display': 'inline-block',
+                'padding': '2px',
+                'margin': '0 0 0 ' + settings.spacing + 'px',
+                'textAlign': 'center',
+                'width': '68px'
+            });
+            registerButton.text('Register');
+            registerButton.on('click', function(event) {
+                event.preventDefault();
+                console.log('registering');
+            });
+            buttonContainer.append(registerButton);
+
+
+            signInForm.append(buttonContainer);
+            signInWindow.append(signInForm);
+
+
+            container.append(signInWindow);
+
+
+            var onlineUsersWindow = popupWindow('Online Users', 160, 248);
+            container.append(onlineUsersWindow);
 
 
             var chatMenu = new Element('div');
@@ -1198,23 +1304,7 @@ var taka = taka || function(settings) {
             });
             onlineUsers.on('click', function(event) {
                 event.preventDefault();
-
-
-                popupWindow.removeChildren();
-                popupWindow.css({
-                    'width': '160px',
-                    'height': '248px',
-                    'backgroundColor': '#ffffff',
-                    'borderRadius': '2px',
-                    'overflow': 'hidden',
-                    'position': 'absolute',
-                    'margin': '-124px 0 0 -80px',
-                    'boxShadow': 'rgba(0, 0, 0, 0.7) 0 0 5px'
-                });
-                popupWindow.append(popupWindowTitle('Users Online'));
-
-
-                showPopupWindow();
+                onlineUsersWindow.show();
             });
             onlineUsersIcon.addClass('fa');
             onlineUsersIcon.addClass('fa-users');
@@ -1276,7 +1366,7 @@ var taka = taka || function(settings) {
             });
             settingControls.on('click', function(event) {
                 event.preventDefault();
-                showPopupWindow();
+                settingsWindow.show();
             });
             rightMenu.append(settingControls);
 
@@ -1290,104 +1380,7 @@ var taka = taka || function(settings) {
             });
             userControls.on('click', function(event) {
                 event.preventDefault();
-
-
-                popupWindow.removeChildren();
-                popupWindow.css({
-                    'width': '160px',
-                    'height': '148px',
-                    'backgroundColor': '#ffffff',
-                    'borderRadius': '2px',
-                    'overflow': 'hidden',
-                    'position': 'absolute',
-                    'margin': '-74px 0 0 -80px',
-                    'boxShadow': 'rgba(0, 0, 0, 0.7) 0 0 5px'
-                });
-                popupWindow.append(popupWindowTitle('Sign In / Register'));
-
-
-                var signInForm = new Element('form');
-                signInForm.on('submit', function(event) {
-                    event.preventDefault();
-                });
-                signInForm.css({
-                    'padding': (settings.spacing * 2) + 'px'
-                });
-
-
-                var usernameInput = new Element('input');
-                usernameInput.css({
-                    'boxSizing': 'border-box',
-                    'display': 'block',
-                    'padding': settings.spacing + 'px',
-                    'margin': '0 auto ' + (settings.spacing * 2) + 'px',
-                    'width': '140px'
-                });
-                usernameInput.setAttribute('placeholder', 'Username');
-                signInForm.append(usernameInput);
-
-
-                var passwordInput = new Element('input');
-                passwordInput.css({
-                    'boxSizing': 'border-box',
-                    'display': 'block',
-                    'padding': settings.spacing + 'px',
-                    'margin': '0 auto ' + (settings.spacing * 2) + 'px',
-                    'width': '140px'
-                });
-                passwordInput.setAttributes({
-                    'placeholder': 'Password',
-                    'type': 'password'
-                });
-                signInForm.append(passwordInput);
-
-
-                var buttonContainer = new Element('div'),
-                    signInButton = new Element('button'),
-                    registerButton = new Element('button');
-
-
-                buttonContainer.css({
-                    'margin': '0 auto',
-                    'width': '140px'
-                });
-
-
-                signInButton.css({
-                    'boxSizing': 'border-box',
-                    'display': 'inline-block',
-                    'padding': '2px',
-                    'margin': '0',
-                    'textAlign': 'center',
-                    'width': '68px'
-                });
-                signInButton.text('Sign In');
-                signInButton.on('click', function(event) {
-                    event.preventDefault();
-                    console.log('signing in');
-                });
-                buttonContainer.append(signInButton);
-
-
-                registerButton.css({
-                    'boxSizing': 'border-box',
-                    'display': 'inline-block',
-                    'padding': '2px',
-                    'margin': '0 0 0 ' + settings.spacing + 'px',
-                    'textAlign': 'center',
-                    'width': '68px'
-                });
-                registerButton.text('Register');
-                registerButton.on('click', function(event) {
-                    event.preventDefault();
-                    console.log('registering');
-                });
-                buttonContainer.append(registerButton);
-
-
-                signInForm.append(buttonContainer);
-                popupWindow.append(signInForm);
-                showPopupWindow();
+                signInWindow.show();
             });
             rightMenu.append(userControls);
 
