@@ -817,22 +817,25 @@ var taka = taka || function(settings) {
              * @readonly
              */
             var formatMessageContents = function(message) {
-                var italicRegex = /(\*\*).+(\*\*)/gi,
-                    boldRegex = /(\*).+(\*)/gi,
-                    strikeRegex = /(~~).+(~~)/gi;
+                var boldRegex = /(\*\*|__)(\S{1,})\1/gi,
+                    italicRegex = /(\*|_)(\S{1,})\1/gi,
+                    strikeRegex = /(\~)(\S{1,})\1/gi;
 
-                message = message.replace(italicRegex, function(textString) {
-                    textString = textString.substr(2, textString.length - 4);
-                    return '<i>' + textString + '</i>';
-                });
 
                 message = message.replace(boldRegex, function(textString) {
-                    textString = textString.substr(1, textString.length - 2);
+                    textString = textString.substr(2, textString.length - 4);
                     return '<b>' + textString + '</b>';
                 });
 
+
+                message = message.replace(italicRegex, function(textString) {
+                    textString = textString.substr(1, textString.length - 2);
+                    return '<i>' + textString + '</i>';
+                });
+
+
                 return message.replace(strikeRegex, function(textString) {
-                    textString = textString.substr(2, textString.length - 4);
+                    textString = textString.substr(1, textString.length - 2);
                     return '<s>' + textString + '</s>';
                 });
             };
