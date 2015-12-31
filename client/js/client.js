@@ -1150,7 +1150,11 @@ var taka = taka || function(settings) {
                 closePopup.addClass('fa-times');
                 closePopup.css({
                     'float': 'right',
-                    'textDecoration': 'none'
+                    'left': (settings.spacing / 2) + 'px',
+                    'padding': settings.spacing + 'px',
+                    'position': 'relative',
+                    'textDecoration': 'none',
+                    'top': '-' + (settings.spacing) + 'px'
                 });
                 closePopup.on('click', function(event) {
                     event.preventDefault();
@@ -1187,6 +1191,22 @@ var taka = taka || function(settings) {
             });
             onlineUsers.on('click', function(event) {
                 event.preventDefault();
+
+
+                popupWindowContents.removeChildren();
+                popupWindowContents.css({
+                    'width': '160px',
+                    'height': '248px',
+                    'backgroundColor': '#ffffff',
+                    'borderRadius': '2px',
+                    'overflow': 'hidden',
+                    'position': 'absolute',
+                    'margin': '-124px 0 0 -80px',
+                    'boxShadow': 'rgba(0, 0, 0, 0.7) 0 0 5px'
+                });
+                popupWindowContents.append(popupWindowContentsTitle('Users Online'));
+
+
                 showPopupWindow();
             });
             onlineUsersIcon.addClass('fa');
