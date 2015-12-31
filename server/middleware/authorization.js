@@ -41,13 +41,15 @@ module.exports = function(socket, next) {
      * @readonly
      */
     var updateLocalSession = function(data) {
-        socket.session.id = data._id;
+        socket.session.id = data.id;
+
+
         if (typeof data.user !== 'undefined' && data.user !== null) {
             socket.session.role = data.user.role;
             socket.session.username = data.user.username;
         }
         else {
-            socket.session.username = Session.guestName(data._id);
+            socket.session.username = Session.guestName(data.id);
         }
     };
 

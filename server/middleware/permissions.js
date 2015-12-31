@@ -12,7 +12,8 @@
 var permissions = {
     guest: {
         loadMessages: true,
-        sendMessage: true
+        sendMessage: true,
+        registerUser: true
     },
     user: {
         sendMessage: true,
@@ -53,6 +54,16 @@ module.exports = function(socket, next) {
             return (permissions[this.session.role][action] === true);
         }
         return false;
+    };
+
+
+    /**
+     * Determines whether a socket is authorized to perform staff functions.
+     * @returns {boolean} - Whether the socket is authorized to perform staff functions.
+     * @readonly
+     */
+    socket.isStaff = function() {
+        return (this.session.role === 'mod' || this.session.role === 'admin');
     };
 
 

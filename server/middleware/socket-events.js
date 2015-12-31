@@ -1,7 +1,10 @@
 'use strict';
 
 
-var Message = require('../controllers/message-controller.js');
+var Session = require('../controllers/session-controller.js'),
+    Ban = require('../controllers/ban-controller.js'),
+    User = require('../controllers/user-controller.js'),
+    Message = require('../controllers/message-controller.js');
 
 
 /**
@@ -21,8 +24,15 @@ module.exports = function(io) {
      * @readonly
      */
     return function(socket, next) {
-        socket.on('deleteMessage', function(data) {
-            console.log(data);
+
+
+        /**
+         * Deletes a specified message from the chat history.
+         * @param {string} id - The id of a message to delete.
+         * @readonly
+         */
+        socket.on('deleteMessage', function(id) {
+            console.log(id);
         });
 
 
@@ -63,7 +73,7 @@ module.exports = function(io) {
                 }
 
 
-                if (socket.can('viewIP')) {
+                if (socket.isStaff()) {
                     socket.emit('confirmMessage', staffMessage);
                 } else {
                     socket.emit('confirmMessage', publicMessage);
@@ -84,6 +94,90 @@ module.exports = function(io) {
                 if (result.length !== 0) {
                     socket.emit('additionalMessages', result);
                 }
+            });
+        });
+
+
+        /**
+         * Binds a specified user to a specified session ID.
+         * @param {string} session_id - The session ID to bind to.
+         * @param {Object} user       - A user from the database.
+         * @readonly
+         */
+        var bindUserToSession = function(session_id, user) {
+            Session.regenerate(session_id, user, function(error, sessionResult) {
+                socket.session.user_id = user._id;
+                socket.session.id = sessionResult.id;
+                socket.session.role = sessionResult.user.role;
+                socket.session.username = sessionResult.user.username;
+
+
+                if (socket.isStaff()) {
+                    socket.leave('public');
+                    socket.join('staff');
+                }
+
+
+                socket.emit('sessionUpdate', {
+                    id:       socket.session.id,
+                    role:     socket.session.role,
+                    username: socket.session.username
+                });
+            });
+        };
+
+
+        /**
+         * Creates a user with a given set of credentials, then regenerates the session
+         * id and updates the local session.
+         * @param {object} credentials - An object of user credentials.
+         * @readonly
+         */
+        socket.on('registerUser', function(credentials) {
+            console.log(credentials);
+            User.register(credentials, function(error, userResult) {
+                if (error) {
+                    if (error.code === 11000) {
+                        // Username is taken.
+                    }
+                    return;
+                }
+
+
+                return bindUserToSession(socket.session.id, userResult);
+            });
+        });
+
+
+        /**
+         * Authorizes a user with a given set of credentials, then regenerates the session
+         * id and updates the local session.
+         * @param {Object} credentials - An object of user credentials.
+         * @readonly
+         */
+        socket.on('signInAttempt', function(credentials) {
+            User.authorize(credentials, function(error, userResult) {
+                if (error) {
+                    // sign in failed
+                    return;
+                }
+
+
+                Ban.checkUsername(credentials.username, function(error, banResult) {
+                    if (banResult !== null) {
+                        socket.emit('banNotice', {
+                            reason: banResult.reason,
+                            expires: banResult.expires
+                        });
+                        socket.session.role = 'banned';
+
+
+                        return;
+                    }
+
+
+                    return bindUserToSession(socket.session.id, userResult);
+                })
             });
         });
 

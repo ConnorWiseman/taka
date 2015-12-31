@@ -26,6 +26,7 @@ var SessionModel = mongoose.model('Session');
 var updateSession = function(query, update, options, callback) {
     SessionModel.findOneAndUpdate(query, update, options).populate('user').lean().exec(function(error, session) {
         if (error) {
+            console.log('connorerror:', error);
             if (callback && typeof callback === 'function') {
                 return callback(error);
             }
@@ -50,18 +51,61 @@ exports.start = function(session_id, callback) {
         session_id = uuid.v4();
     }
 
+
     var query = {
-        _id: String(session_id)
+        id: String(session_id)
     };
+
 
     var update = {
         expires: new Date()
     };
 
+
     var options = {
         new: true,
         upsert: true
     };
+
+
+    return updateSession(query, update, options, callback);
+};
+
+
+/**
+ * Creates a new session from a given session, binding user information to the new
+ * session as appropriate. Executes a given callback with the updaed session information.
+ * @param {string} session_id       - The local socket session object.
+ * @param {Object} user             - A document representing a user to bind to this session.
+ *                                    Set null to log the session out.
+ * @param {nodeCallback} callback   - A callback function to execute.
+ * @readonly
+ */
+exports.regenerate = function(session_id, user, callback) {
+    var query = {
+        id: String(session_id)
+    };
+
+
+    var update = {
+        id: uuid.v4(),
+        expires: new Date()
+    };
+
+
+    var options = {
+        new: true
+    };
+
+
+    if (user) {
+        update.user = user._id;
+        update.upsert = true;
+    }
+    else {
+        update.user = undefined;
+    }
+
 
     return updateSession(query, update, options, callback);
 };

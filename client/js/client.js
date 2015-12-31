@@ -1164,6 +1164,7 @@ var taka = taka || function(settings) {
                         'opacity': '1',
                         'zIndex': '2'
                     });
+                    popup.HTMLElement.parentNode.appendChild(popup.HTMLElement);
                 };
 
 
@@ -1271,6 +1272,10 @@ var taka = taka || function(settings) {
             registerButton.text('Register');
             registerButton.on('click', function(event) {
                 event.preventDefault();
+                socket.emit('registerUser', {
+                    'username': usernameInput.HTMLElement.value,
+                    'password': passwordInput.HTMLElement.value
+                });
                 console.log('registering');
             });
             buttonContainer.append(registerButton);
@@ -1412,6 +1417,16 @@ var taka = taka || function(settings) {
                     settings.role = data.role;
                     console.log(data);
                     enableTextarea();
+                },
+
+
+                /**
+                 *
+                 */
+                sessionUpdate: function(data) {
+                    setCookie('taka-session_id', data.id);
+                    settings.role = data.role;
+                    console.log(data);
                 },
 
 

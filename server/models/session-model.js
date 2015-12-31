@@ -13,7 +13,7 @@ var mongoose = require('mongoose'),
  * @readonly
  */
 var sessionSchemaFields = {
-    _id: {
+    id: {
         default: uuid.v4,
         required: true,
         type: String,
