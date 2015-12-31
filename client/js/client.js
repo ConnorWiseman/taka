@@ -1334,7 +1334,13 @@ var taka = taka || function(settings) {
             container.append(signInWindow);
 
 
-            var onlineUsersWindow = popupWindow('Online Users', 160, 248);
+            var onlineUsersWindow = popupWindow('Online Users', 160, 248),
+                onlineUsersList = new Element('ul');
+            onlineUsersList.css({
+                'margin': '8px',
+                'padding': '0'
+            });
+            onlineUsersWindow.append(onlineUsersList);
             container.append(onlineUsersWindow);
 
 
@@ -1477,6 +1483,36 @@ var taka = taka || function(settings) {
 
 
             /**
+             * Updates the online users list that's visible to clients.
+             * @readonly
+             */
+            var updateOnlineUsersList = function() {
+                onlineUsersList.removeChildren();
+
+
+                var sortedOnlineUsersList = Object.keys(settings.onlineUsers).sort();
+
+
+                for (var i = 0, numUsers = sortedOnlineUsersList.length; i < numUsers; i++) {
+                    var listItem = new Element('li');
+                    listItem.css({
+                        'listStyle': 'none'
+                    });
+                    var listItemText = sortedOnlineUsersList[i],
+                        instanceCount = settings.onlineUsers[sortedOnlineUsersList[i]].instances.length;
+                    if (instanceCount > 1) {
+                        listItemText += ' (' + instanceCount + ')';
+                    }
+                    listItem.text(listItemText);
+                    onlineUsersList.append(listItem);
+                }
+
+
+                onlineUsersTotal.text(Object.keys(settings.onlineUsers).length);
+            };
+
+
+            /**
              * Socket event functions wrapper.
              * @namespace
              * @method sessionStart       - Incoming session data from the server.
@@ -1519,8 +1555,7 @@ var taka = taka || function(settings) {
                  */
                 onlineUsers: function(data) {
                     settings.onlineUsers = data;
-                    onlineUsersTotal.text(Object.keys(data).length);
-                    console.log(settings.onlineUsers);
+                    updateOnlineUsersList();
                 },
 
 
@@ -1541,7 +1576,7 @@ var taka = taka || function(settings) {
 
 
                     settings.onlineUsers[data.username].instances.push(data.instance);
-                    onlineUsersTotal.text(Object.keys(settings.onlineUsers).length);
+                    updateOnlineUsersList();
                 },
 
 
@@ -1568,7 +1603,7 @@ var taka = taka || function(settings) {
                     }
 
 
-                    onlineUsersTotal.text(Object.keys(settings.onlineUsers).length);
+                    updateOnlineUsersList();
                 },
 
 
@@ -1589,6 +1624,9 @@ var taka = taka || function(settings) {
                         settings.onlineUsers[data.newName] = settings.onlineUsers[data.oldName];
                         delete settings.onlineUsers[data.oldName];
                     }
+
+
+                    updateOnlineUsersList();
                 },
 
 
