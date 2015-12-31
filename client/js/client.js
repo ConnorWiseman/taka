@@ -811,6 +811,34 @@ var taka = taka || function(settings) {
 
 
             /**
+             * Parses message text for Markdown-style formatting tags.
+             * @param {string} message - A message to add formatting to.
+             * @returns {string} - A message with added formatting.
+             * @readonly
+             */
+            var formatMessageContents = function(message) {
+                var italicRegex = /(\*\*).+(\*\*)/gi,
+                    boldRegex = /(\*).+(\*)/gi,
+                    strikeRegex = /(~~).+(~~)/gi;
+
+                message = message.replace(italicRegex, function(textString) {
+                    textString = textString.substr(2, textString.length - 4);
+                    return '<i>' + textString + '</i>';
+                });
+
+                message = message.replace(boldRegex, function(textString) {
+                    textString = textString.substr(1, textString.length - 2);
+                    return '<b>' + textString + '</b>';
+                });
+
+                return message.replace(strikeRegex, function(textString) {
+                    textString = textString.substr(2, textString.length - 4);
+                    return '<s>' + textString + '</s>';
+                });
+            };
+
+
+            /**
              * Replaces image URLs in a specific message string with image elements.
              * @param {string} message - A message to add images to.
              * @returns {string} - A message with added images.
@@ -868,6 +896,7 @@ var taka = taka || function(settings) {
 
                 // Filter the message and add other niceties.
                 var message = filterMessageContents(data.message);
+                message = formatMessageContents(message);
                 message = parseImages(message);
                 message = parseLinks(message);
 
@@ -1412,8 +1441,11 @@ var taka = taka || function(settings) {
             container.append(chatMenu);
 
 
+            /**
+             * Handles changes in the UI when session data is updated.
+             * @readonly
+             */
             var sessionData = function(data) {
-                console.log(data);
                 setCookie('taka-session_id', data.id);
                 settings.role = data.role;
 

@@ -17,16 +17,19 @@ var permissions = {
         signInAttempt: true
     },
     user: {
+        loadMessages: true,
         sendMessage: true,
         signOut: true
     },
     mod: {
+        loadMessages: true,
         deleteMessage: true,
         sendMessage: true,
         signOut: true,
         viewIP: true
     },
     admin: {
+        loadMessages: true,
         deleteMessage: true,
         sendMessage: true,
         signOut: true,
