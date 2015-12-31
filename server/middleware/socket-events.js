@@ -167,7 +167,6 @@ module.exports = function(io) {
          * @readonly
          */
         socket.on('signInAttempt', function(credentials) {
-            console.log(credentials);
             User.authorize(credentials, function(error, userResult) {
                 if (error) {
                     console.log(error);
