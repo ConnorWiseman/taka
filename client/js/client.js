@@ -1033,8 +1033,8 @@ var taka = taka || function(settings) {
                 mousePosition.y = event.clientY;
 
 
-                var widthOffset = popupWindow.HTMLElement.style.width.split('px')[0],
-                    heightOffset = popupWindow.HTMLElement.style.height.split('px')[0];
+                var widthOffset = Number(popupWindow.HTMLElement.style.width.split('px')[0]),
+                    heightOffset = Number(popupWindow.HTMLElement.style.height.split('px')[0]);
 
 
                 if (beingDragged) {
@@ -1042,6 +1042,26 @@ var taka = taka || function(settings) {
                         'left': (mousePosition.x - popupPosition.x + (widthOffset / 2)) + 'px',
                         'top': (mousePosition.y - popupPosition.y + (heightOffset / 2)) + 'px',
                     });
+                    if ((mousePosition.y - 24) < 0) {
+                        popupWindow.css({
+                            'top': (heightOffset / 2) + 'px'
+                        });
+                    }
+                    if ((mousePosition.x - (widthOffset / 2) - 24) < 0) {
+                        popupWindow.css({
+                            'left': (widthOffset / 2) + 'px'
+                        });
+                    }
+                    if ((mousePosition.y + heightOffset) > document.documentElement.clientHeight) {
+                        popupWindow.css({
+                            'top': document.documentElement.clientHeight - (heightOffset / 2) - 16 + 'px'
+                        });
+                    }
+                    if ((mousePosition.x + widthOffset) > document.documentElement.clientWidth) {
+                        popupWindow.css({
+                            'left': document.documentElement.clientWidth - (widthOffset / 2) - 16 + 'px'
+                        });
+                    }
                 }
             });
             document.addEventListener('mouseup', function(event) {
