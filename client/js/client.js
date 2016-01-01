@@ -825,9 +825,9 @@ var taka = taka || function(settings) {
              * @readonly
              */
             var formatMessageContents = function(message) {
-                var boldRegex = /(\*\*|__)(.{1,})\1(?=\s|<|$)/gi,
-                    italicRegex = /(\*|_)(.{1,})\1(?=\s|<|$)/gi,
-                    strikeRegex = /(\~)(.{1,})\1(?=\s|$)/gi;
+                var boldRegex = /(\*\*|__)(.{1,}?)\1(?=\s|<|$)/gi,
+                    italicRegex = /(\*|_)(.{1,}?)\1(?=\s|<|$)/gi,
+                    strikeRegex = /(\~)(.{1,}?)\1(?=\s|$)/gi;
 
 
                 message = message.replace(boldRegex, function(textString) {
