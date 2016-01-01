@@ -697,7 +697,7 @@ var taka = taka || function(settings) {
                     avatarSrc;
 
 
-                if (typeof data.author !== 'undefined' && typeof data.author.avatar !== 'undefined') {
+                if (typeof data.author !== 'undefined' && typeof data.author.avatar !== 'undefined' && data.author.avatar !== '') {
                     avatarSrc = data.author.avatar;
                 }
                 else {
@@ -1698,7 +1698,6 @@ var taka = taka || function(settings) {
                             messages[i].firstChild.src = data.avatar;
                         }
                         else {
-                            console.log(settings.defaultAvatar);
                             messages[i].firstChild.src = settings.defaultAvatar;
                         }
 
