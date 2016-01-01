@@ -27,7 +27,6 @@ exports.add = function(socket) {
 
 
     onlineUsers[socket.session.username].instances.push(socket.id);
-    console.log(onlineUsers);
 };
 
 

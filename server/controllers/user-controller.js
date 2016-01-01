@@ -84,10 +84,24 @@ exports.update = function(username, information, callback) {
     };
 
 
-    var update = {};
+    var update = {
+        $unset: {
+            avatar: 1,
+            URL: 1
+        }
+    };
+
+
     for (var property in information) {
-        update[property] = information[property];
+        if (typeof information[property] !== 'undefined') {
+            delete update.$unset[property];
+            if (Object.keys(update.$unset).length === 0) {
+                delete update.$unset;
+            }
+            update[property] = information[property];
+        }
     }
+    console.log(update);
 
 
     UserModel.update(query, update, function(error, result) {

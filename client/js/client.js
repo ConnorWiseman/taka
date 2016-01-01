@@ -666,17 +666,19 @@ var taka = taka || function(settings) {
 
                 var author;
                 if (typeof data.author !== 'undefined') {
-                    author = data.author.username;
+                    author = data.author;
                 }
                 else {
-                    author = data.guestAuthor;
+                    author = {
+                        username: data.guestAuthor
+                    };
                 }
-                message.data('author', author);
+                message.data('author', author.username);
 
 
                 message.append(createAvatar(data));
                 message.append(createInformation(data));
-                message.append(createAuthor(data));
+                message.append(createAuthor(author));
                 message.append(createMessageContent(data));
 
 
@@ -776,21 +778,21 @@ var taka = taka || function(settings) {
                 authorElement.addClass('author');
 
 
-                if (typeof data.author !== 'undefined') {
-                    if (typeof data.author.URL !== 'undefined' && data.author.URL !== null) {
+                if (typeof data.username !== 'undefined') {
+                    if (typeof data.URL !== 'undefined' && data.URL !== null && data.URL !== '') {
                         var authorLink = new Element('a');
                         authorLink.setAttributes({
-                            'href': data.author.URL,
+                            'href': data.URL,
                             'target': '_blank'
                         });
                         authorLink.css({
                             'textDecoration': 'none'
                         });
-                        authorLink.appendText(data.author.username);
+                        authorLink.appendText(data.username);
                         authorElement.append(authorLink);
                     }
                     else {
-                        authorElement.appendText(data.author.username);
+                        authorElement.appendText(data.username);
                     }
                 }
                 else {
@@ -1396,11 +1398,11 @@ var taka = taka || function(settings) {
             updateButton.text('Update');
             updateButton.on('click', function(event) {
                 event.preventDefault();
-                var avatarValue = avatarInput.HTMLElement.value,
-                    urlValue = urlInput.HTMLElement.value;
+
+
                 socket.emit('updateSettings', {
-                    'avatar': (avatarValue !== '') ? avatarValue : undefined,
-                    'URL': (urlValue !== '') ? urlValue : undefined
+                    'avatar': avatarInput.HTMLElement.value,
+                    'URL': urlInput.HTMLElement.value
                 });
             });
             settingsForm.append(updateButton);
@@ -1422,7 +1424,10 @@ var taka = taka || function(settings) {
             var onlineUsers = new Element('a'),
                 onlineUsersIcon = new Element('span'),
                 onlineUsersTotal = new Element('span');
-            onlineUsers.setAttribute('href', '#');
+            onlineUsers.setAttributes({
+                'href': '#',
+                'title': 'Online users'
+            });
             onlineUsers.css({
                 'float': 'left',
                 'textDecoration': 'none'
@@ -1448,7 +1453,10 @@ var taka = taka || function(settings) {
 
 
             var volumeControls = new Element('a');
-            volumeControls.setAttribute('href', '#');
+            volumeControls.setAttributes({
+                'href': '#',
+                'title': 'Adjust volume'
+            });
             volumeControls.addClass('fa');
             volumeControls.addClass(getVolumeIcon(settings.volume));
             volumeControls.css({
@@ -1481,7 +1489,10 @@ var taka = taka || function(settings) {
 
 
             var settingControls = new Element('a');
-            settingControls.setAttribute('href', '#');
+            settingControls.setAttributes({
+                'href': '#',
+                'title': 'Settings'
+            });
             settingControls.addClass('fa');
             settingControls.addClass('fa-cog');
             settingControls.css({
@@ -1508,6 +1519,7 @@ var taka = taka || function(settings) {
                     signInWindow.show();
                 }
                 else {
+                    settingsWindow.hide();
                     socket.emit('signOut');
                 }
             });
@@ -1522,13 +1534,12 @@ var taka = taka || function(settings) {
              * @readonly
              */
             var sessionData = function(data) {
-                console.log(data);
                 setCookie('taka-session_id', data.id);
                 settings.role = data.role;
 
 
                 if (settings.role === 'guest') {
-                    userControls.setAttribute('title', 'Sign In / Register');
+                    userControls.setAttribute('title', 'Sign in / register');
                     userControls.removeClass('fa-user-times');
                     userControls.addClass('fa-user-plus');
                     settingControls.css({
@@ -1536,14 +1547,28 @@ var taka = taka || function(settings) {
                     });
                 }
                 else {
-                    userControls.setAttribute('title', 'Sign Out');
+                    userControls.setAttribute('title', 'Sign out');
                     userControls.removeClass('fa-user-plus');
                     userControls.addClass('fa-user-times');
                     settingControls.css({
                         'display': 'inline-block'
                     });
-                    avatarInput.HTMLElement.value = data.avatar;
-                    urlInput.HTMLElement.value = data.URL;
+
+
+                    if (typeof data.avatar === 'undefined') {
+                        avatarInput.HTMLElement.value = '';
+                    }
+                    else {
+                        avatarInput.HTMLElement.value = data.avatar;
+                    }
+
+
+                    if (typeof data.URL === 'undefined') {
+                        urlInput.HTMLElement.value = '';
+                    }
+                    else {
+                        urlInput.HTMLElement.value = data.URL;
+                    }
                 }
 
 
@@ -1558,7 +1583,6 @@ var taka = taka || function(settings) {
              */
             var updateOnlineUsersList = function() {
                 onlineUsersList.removeChildren();
-                console.log(settings.onlineUsers);
 
 
                 var sortedOnlineUsersList = Object.keys(settings.onlineUsers).sort();
@@ -1662,6 +1686,46 @@ var taka = taka || function(settings) {
                 sessionUpdate: function(data) {
                     sessionData(data);
                     signInWindow.hide();
+                },
+
+
+                settingsUpdate: function(data) {
+                    var messages = document.querySelectorAll('[data-author="' + data.username + '"]');
+
+
+                    for (var i = 0, messagesLength = messages.length; i < messagesLength; i++) {
+                        if (data.avatar !== '') {
+                            messages[i].firstChild.src = data.avatar;
+                        }
+                        else {
+                            console.log(settings.defaultAvatar);
+                            messages[i].firstChild.src = settings.defaultAvatar;
+                        }
+
+
+                        var currentAuthor = messages[i].firstChild.nextSibling.nextSibling,
+                            newAuthor = createAuthor(data);
+                        messages[i].replaceChild(newAuthor.HTMLElement, currentAuthor);
+                    }
+
+
+                    if (data.avatar !== '') {
+                        settings.onlineUsers[data.username].avatar = data.avatar;
+                    }
+                    else {
+                        settings.onlineUsers[data.username].avatar = settings.defaultAvatar;
+                    }
+
+
+                    if (data.URL !== '') {
+                        settings.onlineUsers[data.username].URL = data.URL;
+                    }
+                    else {
+                        delete settings.onlineUsers[data.username].URL;
+                    }
+
+
+                    updateOnlineUsersList();
                 },
 
 

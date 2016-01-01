@@ -124,11 +124,15 @@ module.exports = function(io) {
                         currentSocket.session.user_id = undefined;
                         currentSocket.session.role = 'guest';
                         currentSocket.session.username = Session.guestName(currentSocket.session.id);
+                        currentSocket.session.avatar = undefined;
+                        currentSocket.session.URL = undefined;
                     }
                     else {
                         currentSocket.session.user_id = sessionResult.user._id;
                         currentSocket.session.role = sessionResult.user.role;
                         currentSocket.session.username = sessionResult.user.username;
+                        currentSocket.session.avatar = sessionResult.user.avatar;
+                        currentSocket.session.URL = sessionResult.user.URL;
                     }
 
 
@@ -145,7 +149,9 @@ module.exports = function(io) {
                     currentSocket.emit('sessionUpdate', {
                         id:       currentSocket.session.id,
                         role:     currentSocket.session.role,
-                        username: currentSocket.session.username
+                        username: currentSocket.session.username,
+                        avatar:   currentSocket.session.avatar,
+                        URL:      currentSocket.session.URL
                     });
                 }
 
@@ -229,22 +235,10 @@ module.exports = function(io) {
         socket.on('updateSettings', function(settings) {
             if (Object.keys(settings).length > 0) {
                 User.update(socket.session.username, settings, function(error, result) {
-                    var settingsUpdate = {
-                        username: socket.session.username
-                    };
+                    settings.username = socket.session.username;
 
 
-                    if (typeof settings.URL !== 'undefined' && settings.URL !== '') {
-                        settingsUpdate.URL = settings.URL;
-                    }
-
-
-                    if (typeof settings.avatar !== 'undefined' && settings.avatar !== '') {
-                        settingsUpdate.avatar = settings.avatar;
-                    }
-
-
-                    io.emit('settingsUpdate', settingsUpdate);
+                    io.emit('settingsUpdate', settings);
                 });
             }
         });
