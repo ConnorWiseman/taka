@@ -33,7 +33,9 @@ module.exports = function(io) {
          * @readonly
          */
         socket.on('deleteMessage', function(id) {
-            console.log(id);
+            Message.delete(id, function(error, result) {
+                io.emit('deleteMessage', id);
+            });
         });
 
 
@@ -157,7 +159,6 @@ module.exports = function(io) {
 
 
                 OnlineUsers.rename(oldName, currentSocket.session.username);
-                console.log(currentSocket.session.avatar);
                 io.emit('onlineUsersRename', {
                     oldName: oldName,
                     newName: currentSocket.session.username,

@@ -116,3 +116,22 @@ exports.fetchAdditional = function(socket, lastId, callback) {
 
     return fetchMessages(query, socket, callback);
 };
+
+
+/**
+ *
+ */
+exports.delete = function(message_id, callback) {
+    MessageModel.update({
+        _id: message_id
+    }, {
+        deleted: true
+    }).exec(function(error, result) {
+        if (error) {
+            return callback(error);
+        }
+
+
+        return callback(null, result);
+    });
+};

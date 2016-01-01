@@ -250,13 +250,29 @@ var taka = taka || function(settings) {
 
 
         /**
+         * Removes the selected child from an existing object.
+         * @returns {this}
+         * @readonly
+         */
+        this.removeChild = function(child) {
+            if (child instanceof Element) {
+                this.HTMLElement.removeChild(child.HTMLElement);
+            }
+            else {
+                this.HTMLElement.removeChild(child);
+            }
+            return this;
+        };
+
+
+        /**
          * Removes all children from an existing object.
          * @returns {this}
          * @readonly
          */
         this.removeChildren = function() {
             while (this.HTMLElement.firstChild) {
-                this.HTMLElement.removeChild(this.HTMLElement.firstChild);
+                this.removeChild(this.HTMLElement.firstChild);
             }
             return this;
         };
@@ -746,7 +762,7 @@ var taka = taka || function(settings) {
                     var deleteLink = new Element('a');
                     deleteLink.addClass('delete-message');
                     deleteLink.addClass('fa');
-                    deleteLink.addClass('fa-trash-o');
+                    deleteLink.addClass('fa-times');
                     deleteLink.setAttribute('href', '#');
                     deleteLink.css({
                         'display': 'inline-block',
@@ -1417,7 +1433,7 @@ var taka = taka || function(settings) {
 
 
                     if (!urlIsValid) {
-                        avatarInput.css({
+                        urlInput.css({
                             'boxShadow': '0 0 3px 1px rgba(255, 0, 0, 0.9)'
                         });
                     }
@@ -1698,10 +1714,17 @@ var taka = taka || function(settings) {
              * Socket event functions wrapper.
              * @namespace
              * @method sessionStart       - Incoming session data from the server.
+             * @method sessionUpdate      - Updated session data from signing in/out.
+             * @method settingsUpdate     - Updated settings data.
+             * @method onlineUsers        - The initial contents of the online users list.
+             * @method onlineUsersAdd     - Adds a user to the online users list.
+             * @method onlineUsersRemove  - Removes a user from the online users list.
+             * @method onlineUsersRename  - Renames a user on the online users list.
              * @method initialMessages    - Initial message data used to populate chat.
              * @method additionalMessages - Additional message data used to populate chat history.
              * @method newMessage         - Adds a new message from another client to the chat history.
              * @method confirmMessage     - Adds a new message from this client to the chat history.
+             * @method deleteMessage      - Deletes a message from the chat history.
              * @readonly
              */
             var SocketEvents = {
@@ -1709,7 +1732,7 @@ var taka = taka || function(settings) {
 
                 /**
                  * Loads session data from server into a cookie and enables the textarea.
-                 * @param data - Current session data in JSON format.
+                 * @param {Object} data - Current session data in JSON format.
                  * @readonly
                  */
                 sessionStart: function(data) {
@@ -1721,7 +1744,7 @@ var taka = taka || function(settings) {
 
                 /**
                  * Updates session data with new session information from the server.
-                 * @param data - Current session data in JSON format.
+                 * @param {Object} data - Current session data in JSON format.
                  * @readonly
                  */
                 sessionUpdate: function(data) {
@@ -1730,6 +1753,11 @@ var taka = taka || function(settings) {
                 },
 
 
+                /**
+                 * Applies updates to user settings information to messages and the online list.
+                 * @param {Object} data - Updated settings information.
+                 * @readonly
+                 */
                 settingsUpdate: function(data) {
                     var messages = document.querySelectorAll('[data-author="' + data.username + '"]');
 
@@ -1774,7 +1802,7 @@ var taka = taka || function(settings) {
 
                 /**
                  * Updates the list of currently online users with the most recent data from the server.
-                 * @param data - The current list of online users.
+                 * @param {Object} data - The current list of online users.
                  * @readonly
                  */
                 onlineUsers: function(data) {
@@ -1786,7 +1814,7 @@ var taka = taka || function(settings) {
                 /**
                  * Adds a specified socket instance to the specified client entry
                  * in the online users list.
-                 * @param data          - An object containing a socket-client value pair.
+                 * @param {Object} data - An object containing a socket-client value pair.
                  *        data.username - The client entry to add a socket instance to.
                  *        data.instance - The socket instance to be added.
                  * @readonly
@@ -1794,6 +1822,7 @@ var taka = taka || function(settings) {
                 onlineUsersAdd: function(data) {
                     if (typeof settings.onlineUsers[data.username] === 'undefined') {
                         settings.onlineUsers[data.username] = {
+                            joined: data.joined,
                             instances: []
                         };
                     }
@@ -1810,7 +1839,7 @@ var taka = taka || function(settings) {
                  * Removes the specified socket instance from the specified client entry
                  * in the online users list. Deletes the client entry if no socket instances
                  * are associated with it.
-                 * @param data          - An object containing a socket-client value pair.
+                 * @param {Object} data - An object containing a socket-client value pair.
                  *        data.username - The client entry to remove a socket instance from.
                  *        data.instance - The socket instance to be removed.
                  * @readonly
@@ -1835,13 +1864,12 @@ var taka = taka || function(settings) {
 
                 /**
                  * Renames a specified client entry in the online users list.
-                 * @param data         - An object containing an old name-new name value pair.
-                 *        data.oldName - The client entry to be renamed.
-                 *        data.newName - The name to use for the new client entry.
+                 * @param {Object} data - An object containing an old name-new name value pair.
+                 *         data.oldName - The client entry to be renamed.
+                 *         data.newName - The name to use for the new client entry.
                  * @readonly
                  */
                 onlineUsersRename: function(data) {
-                    console.log(data);
                     if (data.oldName === data.newName) {
                         return;
                     }
@@ -1871,7 +1899,7 @@ var taka = taka || function(settings) {
 
                 /**
                  * Populates the chat history with the most recent messages.
-                 * @param data - An array of message JSON objects.
+                 * @param {Object} data - An array of message JSON objects.
                  * @readonly
                  */
                 initialMessages: function(data) {
@@ -1885,7 +1913,7 @@ var taka = taka || function(settings) {
 
                 /**
                  * Populates the chat history with older messages.
-                 * @param data - An array of message JSON objects.
+                 * @param {Object} data - An array of message JSON objects.
                  * @readonly
                  */
                 additionalMessages: function(data) {
@@ -1897,7 +1925,7 @@ var taka = taka || function(settings) {
 
                 /**
                  * Adds a new message from another client to the chat history.
-                 * @param data - An array of message JSON objects.
+                 * @param {Object} data - An array of message JSON objects.
                  * @readonly
                  */
                 newMessage: function(data) {
@@ -1908,7 +1936,7 @@ var taka = taka || function(settings) {
 
                 /**
                  * Adds a new message from this client to the chat history.
-                 * @param data - An array of message JSON objects.
+                 * @param {Object} data - An array of message JSON objects.
                  * @readonly
                  */
                 confirmMessage: function(data) {
@@ -1916,6 +1944,16 @@ var taka = taka || function(settings) {
                     enableTextarea();
                     clearTextarea();
                     focusTextarea();
+                },
+
+
+                /**
+                 * Deletes a message from the chat history.
+                 * @param {string} data - The id of the message to delete.
+                 * @readonly
+                 */
+                deleteMessage: function(data) {
+                    messageList.removeChild(document.getElementById(data));
                 }
             };
 
