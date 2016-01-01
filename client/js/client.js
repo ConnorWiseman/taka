@@ -841,7 +841,7 @@ var taka = taka || function(settings) {
 
 
                 return message.replace(strikeRegex, function(textString) {
-                    return '<s>' + textString + '</s>';
+                    return '<s>' + textString.trim().substring(1, textString.length -1) + '</s>';
                 });
             };
 
@@ -1737,6 +1737,9 @@ var taka = taka || function(settings) {
                     else {
                         delete settings.onlineUsers[data.username].URL;
                     }
+
+
+                    settingsWindow.hide();
 
 
                     updateOnlineUsersList();
