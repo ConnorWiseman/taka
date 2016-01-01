@@ -18,14 +18,12 @@ module.exports = function(socket, next) {
     /**
      * Publicly exposed session data.
      * @namespace
-     * @property channel  - The current channel.
      * @property id       - The session id.
      * @property role     - The user role used by the session.
      * @property username - The username associated with the session.
      * @readonly
      */
     var sessionData = {
-        'channel':  socket.session.channel,
         'id':       socket.session.id,
         'role':     socket.session.role,
         'username': socket.session.username,

@@ -77,3 +77,9 @@ exports.rename = function(oldName, newName) {
         delete onlineUsers[oldName];
     }
 };
+
+
+exports.update = function(username, data) {
+    onlineUsers[username].avatar = data.avatar;
+    onlineUsers[username].URL = data.URL;
+};

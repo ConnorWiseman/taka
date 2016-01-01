@@ -1599,7 +1599,7 @@ var taka = taka || function(settings) {
                     var avatarSrc = settings.onlineUsers[sortedOnlineUsersList[i]].avatar;
 
 
-                    if (typeof avatarSrc === 'undefined') {
+                    if (typeof avatarSrc === 'undefined' || avatarSrc === '') {
                         avatarSrc = settings.defaultAvatar;
                     }
 
@@ -1628,7 +1628,7 @@ var taka = taka || function(settings) {
                     }
 
 
-                    if (typeof URL !== 'undefined') {
+                    if (typeof URL !== 'undefined' && URL !== '') {
                         var listItemLink = new Element('a');
                         listItemLink.setAttributes({
                             'href': URL,
@@ -1755,6 +1755,8 @@ var taka = taka || function(settings) {
                     }
 
 
+                    settings.onlineUsers[data.username].avatar = data.avatar;
+                    settings.onlineUsers[data.username].URL = data.URL;
                     settings.onlineUsers[data.username].instances.push(data.instance);
                     updateOnlineUsersList();
                 },

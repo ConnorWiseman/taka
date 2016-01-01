@@ -101,7 +101,6 @@ exports.update = function(username, information, callback) {
             update[property] = information[property];
         }
     }
-    console.log(update);
 
 
     UserModel.update(query, update, function(error, result) {

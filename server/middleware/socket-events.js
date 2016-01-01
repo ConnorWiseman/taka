@@ -235,6 +235,14 @@ module.exports = function(io) {
         socket.on('updateSettings', function(settings) {
             if (Object.keys(settings).length > 0) {
                 User.update(socket.session.username, settings, function(error, result) {
+                    
+
+                    OnlineUsers.update(socket.session.username, {
+                        avatar: settings.avatar,
+                        URL: settings.URL
+                    });
+
+
                     settings.username = socket.session.username;
 
 
