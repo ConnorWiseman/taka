@@ -1134,6 +1134,7 @@ var taka = taka || function(settings) {
                 var popup = new Element('div');
 
 
+                popup.isVisible = false;
                 popup.beingDragged = false;
                 document.addEventListener('mouseup', function(event) {
                     popup.beingDragged = false;
@@ -1216,7 +1217,8 @@ var taka = taka || function(settings) {
                         'opacity': '1',
                         'zIndex': '2'
                     });
-                    popup.HTMLElement.parentNode.appendChild(popup.HTMLElement);
+                    this.isVisible = true;
+                    this.HTMLElement.parentNode.appendChild(this.HTMLElement);
                 };
 
 
@@ -1225,14 +1227,15 @@ var taka = taka || function(settings) {
                  * @readonly
                  */
                 popup.hide = function() {
-                    popup.css({
+                    this.css({
                         'opacity': '0'
                     });
                     setTimeout(function() {
-                        popup.css({
+                        this.css({
                             'zIndex': '-2'
-                        })
-                    }, 350);
+                        });
+                        this.isVisible = false;
+                    }.bind(this), 350);
                 };
 
 
@@ -1434,7 +1437,12 @@ var taka = taka || function(settings) {
             });
             onlineUsers.on('click', function(event) {
                 event.preventDefault();
-                onlineUsersWindow.show();
+                if (onlineUsersWindow.isVisible) {
+                    onlineUsersWindow.hide();
+                }
+                else {
+                    onlineUsersWindow.show();
+                }
             });
             onlineUsersIcon.addClass('fa');
             onlineUsersIcon.addClass('fa-users');
@@ -1502,7 +1510,12 @@ var taka = taka || function(settings) {
             });
             settingControls.on('click', function(event) {
                 event.preventDefault();
-                settingsWindow.show();
+                if (settingsWindow.isVisible) {
+                    settingsWindow.hide();
+                }
+                else {
+                    settingsWindow.show();
+                }
             });
             rightMenu.append(settingControls);
 
@@ -1516,7 +1529,12 @@ var taka = taka || function(settings) {
             userControls.on('click', function(event) {
                 event.preventDefault();
                 if (settings.role === 'guest') {
-                    signInWindow.show();
+                    if (signInWindow.isVisible) {
+                        signInWindow.hide();
+                    }
+                    else {
+                        signInWindow.show();
+                    }
                 }
                 else {
                     settingsWindow.hide();

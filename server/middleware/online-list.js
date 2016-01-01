@@ -20,6 +20,8 @@ module.exports = function(socket, next) {
     socket.emit('onlineUsers', OnlineUsers.list());
     socket.broadcast.emit('onlineUsersAdd', {
         username: socket.session.username,
+        avatar: socket.session.avatar,
+        URL: socket.session.URL,
         instance: socket.id
     });
 
