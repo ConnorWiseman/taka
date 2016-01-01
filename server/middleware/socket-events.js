@@ -157,9 +157,12 @@ module.exports = function(io) {
 
 
                 OnlineUsers.rename(oldName, currentSocket.session.username);
+                console.log(currentSocket.session.avatar);
                 io.emit('onlineUsersRename', {
                     oldName: oldName,
-                    newName: currentSocket.session.username
+                    newName: currentSocket.session.username,
+                    avatar: currentSocket.session.avatar,
+                    URL: currentSocket.session.URL
                 });
             });
         };

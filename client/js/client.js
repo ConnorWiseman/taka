@@ -1841,8 +1841,17 @@ var taka = taka || function(settings) {
                  * @readonly
                  */
                 onlineUsersRename: function(data) {
+                    console.log(data);
                     if (data.oldName === data.newName) {
                         return;
+                    }
+
+
+                    if (settings.onlineUsers.hasOwnProperty(data.newName)) {
+                        for (var i = 0, numInstances = settings.onlineUsers[data.oldName].instances.length; i < numInstances; i++) {
+                            settings.onlineUsers[data.newName].instances.push(settings.onlineUsers[data.oldName].instances[i]);
+                        }
+                        delete settings.onlineUsers[data.oldName];
                     }
 
 
@@ -1850,6 +1859,10 @@ var taka = taka || function(settings) {
                         settings.onlineUsers[data.newName] = settings.onlineUsers[data.oldName];
                         delete settings.onlineUsers[data.oldName];
                     }
+
+
+                    settings.onlineUsers[data.newName].avatar = data.avatar;
+                    settings.onlineUsers[data.newName].URL = data.URL;
 
 
                     updateOnlineUsersList();
