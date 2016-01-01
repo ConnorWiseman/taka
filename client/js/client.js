@@ -1795,6 +1795,14 @@ var taka = taka || function(settings) {
 
 
                 banNotice: function(data) {
+                    signInWindow.hide();
+                    settingsWindow.hide();
+                    onlineUsersWindow.hide();
+                    chatMenu.css({
+                        'display': 'none'
+                    });
+                    messageList.removeChildren();
+                    disableTextarea();
                     console.log(data);
                     socket.disconnect();
                 },
