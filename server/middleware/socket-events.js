@@ -94,11 +94,20 @@ module.exports = function(io) {
          * @readonly
          */
         socket.on('loadMessages', function(id) {
-            Message.fetchAdditional(socket, id, function(error, result) {
-                if (result.length !== 0) {
-                    socket.emit('additionalMessages', result);
-                }
-            });
+            if (typeof id === 'undefined') {
+                Message.fetchInitial(socket, function(error, result) {
+                    if (result.length !== 0) {
+                        socket.emit('initialMessages', result);
+                    }
+                });
+            }
+            else {
+                Message.fetchAdditional(socket, id, function(error, result) {
+                    if (result.length !== 0) {
+                        socket.emit('additionalMessages', result);
+                    }
+                });
+            }
         });
 
 

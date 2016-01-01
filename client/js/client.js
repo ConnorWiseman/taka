@@ -619,7 +619,7 @@ var taka = taka || function(settings) {
                 'width': (settings.width - (settings.spacing * 4)) + 'px'
             });
             messageWrapper.on('scroll', function(event) {
-                if (messageWrapper.HTMLElement.scrollTop === 0) {
+                if (messageWrapper.HTMLElement.scrollTop === 0 && messageList.HTMLElement.firstElementChild) {
                     socket.emit('loadMessages', messageList.HTMLElement.firstElementChild.id);
                 }
             });
@@ -753,6 +753,10 @@ var taka = taka || function(settings) {
                 information.css({
                     'fontSize': '65%',
                     'textAlign': 'right',
+                    'MozUserSelect': 'none',
+                    'webkitUserSelect': 'none',
+                    'msUserSelect': 'none',
+                    'userSelect': 'none'
                 });
                 information.appendText(formatDate(data.date));
 
@@ -763,7 +767,10 @@ var taka = taka || function(settings) {
                     deleteLink.addClass('delete-message');
                     deleteLink.addClass('fa');
                     deleteLink.addClass('fa-times');
-                    deleteLink.setAttribute('href', '#');
+                    deleteLink.setAttributes({
+                        'href': '#',
+                        'title': 'Delete message'
+                    });
                     deleteLink.css({
                         'display': 'inline-block',
                         'margin': '0 ' + settings.spacing + 'px',
@@ -1065,10 +1072,33 @@ var taka = taka || function(settings) {
             };
 
 
+            /**
+             * Validates the text area contents.
+             * @readonly
+             */
+            var validateTextarea = function() {
+                return (chatTextarea.HTMLElement.value !== '');
+            };
+
+
             chatForm.on('submit', function(event) {
                 event.preventDefault();
-                disableTextarea();
-                socket.emit('sendMessage', chatTextarea.HTMLElement.value);
+
+
+                if (validateTextarea()) {
+                    var messageContents = chatTextarea.HTMLElement.value;
+
+
+                    disableTextarea();
+
+
+                    if (messageContents[0] === '/') {
+                        console.log('hey');
+                    }
+
+
+                    socket.emit('sendMessage', messageContents);
+                }
             });
 
 
@@ -1207,7 +1237,11 @@ var taka = taka || function(settings) {
                     'top': '50%',
                     'transition': 'opacity 0.15s ease-in',
                     'width': width + 'px',
-                    'zIndex': '-2'
+                    'zIndex': '-2',
+                    'MozUserSelect': 'none',
+                    'webkitUserSelect': 'none',
+                    'msUserSelect': 'none',
+                    'userSelect': 'none'
                 });
 
 
@@ -1459,7 +1493,11 @@ var taka = taka || function(settings) {
             var chatMenu = new Element('div');
             chatMenu.css({
                 'clear': 'both',
-                'margin': '0 ' + (settings.spacing * 2) + 'px'
+                'margin': '0 ' + (settings.spacing * 2) + 'px',
+                'MozUserSelect': 'none',
+                'webkitUserSelect': 'none',
+                'msUserSelect': 'none',
+                'userSelect': 'none'
             });
 
 
@@ -1748,7 +1786,31 @@ var taka = taka || function(settings) {
                  * @readonly
                  */
                 sessionUpdate: function(data) {
+                    var oldRole = settings.role;
+
+
                     sessionData(data);
+
+
+                    var newRole = settings.role;
+
+
+                    if ((oldRole === 'guest' && newRole === 'mod') ||
+                        (oldRole === 'guest' && newRole === 'admin')) {
+                        messageList.removeChildren();
+                        socket.emit('loadMessages');
+                    }
+                    else if ((oldRole === 'mod') ||
+                             (oldRole === 'admin')) {
+                        var messages = messageList.HTMLElement.children;
+                        for (var i = 0, numMessages = messages.length; i < numMessages; i++) {
+                            var messageChildren = messages[i].children;
+                            messageChildren[1].removeAttribute('title');
+                            messageChildren[1].removeChild(messageChildren[1].lastElementChild);
+                        }
+                    }
+
+
                     signInWindow.hide();
                 },
 
