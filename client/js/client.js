@@ -866,27 +866,17 @@ var taka = taka || function(settings) {
              * Replaces URLs in a specific message string with active links.
              * @param {string} message - A message to add links to.
              * @returns {string} - A message with added links.
+             * @author Diego Perini
+             * @link https://gist.github.com/dperini/729294
              * @readonly
              */
             var parseLinks = function(message) {
-                var urlRegex = /(((https*?)+:\/\/)(([a-z0-9\-]+\.)+([a-z]{2,24}))(\/[a-z0-9_\-\.~]+)*(\/([a-z0-9_\-\.]*)(\?[a-z0-9+_\-\.%=&amp;]*)?)?(#[a-zA-Z0-9!$&'()*+.=-_~:@\/?]*)?)(\s+|$)/gi;
+                var urlRegex = /(?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,}))\.?)(?::\d{2,5})?(?:[/?#]\S*)?/gi;
+
 
 
                 return message.replace(urlRegex, function(url) {
-                    url = url.trim();
-                    var parts = url.split('://'),
-                        linkString;
-
-
-                    if (parts.length > 1) {
-                        linkString = '<a href="' + url + '" target="_blank">' + url + '</a> ';
-                    }
-                    else {
-                        linkString = '<a href="' + settings.defaultProtocol + '://' + url + '" target="_blank">' + url + '</a> ';
-                    }
-
-
-                    return linkString;
+                    return '<a href="' + url + '" target="_blank">' + url + '</a> ';
                 });
             };
 
@@ -1400,15 +1390,51 @@ var taka = taka || function(settings) {
                 event.preventDefault();
 
 
-                socket.emit('updateSettings', {
-                    'avatar': avatarInput.HTMLElement.value,
-                    'URL': urlInput.HTMLElement.value
-                });
+                var avatarIsValid = validateSettingsInput(avatarInput),
+                    urlIsValid = validateSettingsInput(urlInput);
+
+
+                if (avatarIsValid && urlIsValid) {
+                    avatarInput.css({
+                        'boxShadow': 'none'
+                    });
+                    urlInput.css({
+                        'boxShadow': 'none'
+                    });
+
+
+                    socket.emit('updateSettings', {
+                        'avatar': avatarInput.HTMLElement.value,
+                        'URL': urlInput.HTMLElement.value
+                    });
+                }
+                else {
+                    if (!avatarIsValid) {
+                        avatarInput.css({
+                            'boxShadow': '0 0 3px 1px rgba(255, 0, 0, 0.9)'
+                        });
+                    }
+
+
+                    if (!urlIsValid) {
+                        avatarInput.css({
+                            'boxShadow': '0 0 3px 1px rgba(255, 0, 0, 0.9)'
+                        });
+                    }
+                }
             });
             settingsForm.append(updateButton);
 
 
             settingsWindow.append(settingsForm);
+
+
+            var validateSettingsInput = function(input) {
+                var urlRegex = new RegExp(/(?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,}))\.?)(?::\d{2,5})?(?:[/?#]\S*)?/gi);
+
+
+                return (urlRegex.test(input.HTMLElement.value) || input.HTMLElement.value === '');
+            };
 
 
             container.append(settingsWindow);

@@ -40,7 +40,7 @@ exports.list = function() {
 
 
 /**
- * Renames a socket instance from the online users list and, if they have no other
+ * Removes a socket instance from the online users list and, if they have no other
  * active connections, deletes the client's entry from the online users list.
  * @readonly
  */
@@ -68,6 +68,16 @@ exports.remove = function(socket) {
  */
 exports.rename = function(oldName, newName) {
     if (oldName === newName) {
+        return;
+    }
+
+
+    if (onlineUsers.hasOwnProperty(newName)) {
+        for (var i = 0, numInstances = onlineUsers[oldName].instances.length; i < numInstances; i++) {
+            onlineUsers[newName].instances.push(onlineUsers[oldName].instances[i]);
+        }
+        delete onlineUsers[oldName];
+        console.log(onlineUsers[newName]);
         return;
     }
 
