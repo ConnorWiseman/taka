@@ -2,7 +2,8 @@
 
 
 var mongoose = require('mongoose'),
-    address = require('../utilities/ip-address.js');
+    address = require('../utilities/ip-address.js'),
+    guestName = require('../utilities/guest-name.js');
 
 
 var BanModel = mongoose.model('Ban');
@@ -22,6 +23,63 @@ var BanModel = mongoose.model('Ban');
  */
 var checkForBan = function(query, callback) {
     BanModel.findOne(query, function (error, result) { 
+        if (error) {
+            return callback(error);
+        }
+
+
+        return callback(null, result);
+    });
+};
+
+
+/**
+ * Adds a new ban record to the database, then executes a given callback with the
+ * new ban information.
+ * @param {string} string         - Either a username or an IP address.
+ * @param {string} reason         - The reason for the new ban.
+ * @param {number} duration       - The duration of the new ban, in seconds.
+ * @param {nodeCallback} callback - A callback function to execute.
+ * @readonly
+ */
+exports.username = function(username, duration, reason, callback) {
+    if (guestName.check(username)) {
+        return callback('Cannot ban guests by username.');
+    }
+
+
+    if (typeof duration === 'undefined') {
+        duration = 30;
+    }
+
+
+    if (typeof reason === 'undefined') {
+        reason = 'No reason given';
+    }
+
+
+    var expirationDate = new Date();
+    expirationDate.setSeconds(expirationDate.getSeconds() + (duration - 60));
+
+
+    var query = {
+        username: username
+    };
+
+
+    var update = {
+        expires: expirationDate,
+        reason: reason
+    };
+
+
+    var options = {
+        new: true,
+        upsert: true
+    };
+
+
+    BanModel.findOneAndUpdate(query, update, options).lean().exec(function(error, result) {
         if (error) {
             return callback(error);
         }

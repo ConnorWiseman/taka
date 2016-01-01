@@ -27,6 +27,11 @@ module.exports = function(io) {
     return function(socket, next) {
 
 
+        if (socket.session.role === 'banned') {
+            return next();
+        }
+
+
         /**
          * Deletes a specified message from the chat history.
          * @param {string} id - The id of a message to delete.
@@ -190,6 +195,7 @@ module.exports = function(io) {
                     if (error.code === 11000) {
                         // Username is taken.
                     }
+                    console.log(error);
                     return;
                 }
 
@@ -262,6 +268,30 @@ module.exports = function(io) {
                     io.emit('settingsUpdate', settings);
                 });
             }
+        });
+
+
+        /**
+         * Removes the socket from the online users list when it disconnects.
+         * @readonly
+         */
+        socket.on('banUsername', function(data) {
+            Ban.username(data.username, data.duration, data.reason, function(error, result) {
+                if (error) {
+                    if (error === 'Cannot ban guests by username.') {
+                        console.log('guest');
+                        //get IP of guest to ban instead
+                    }
+                    console.log(error);
+                    return;
+                }
+
+
+                io.sockets.in(result.username).emit('banNotice', {
+                    reason: result.reason,
+                    expires: result.expires
+                });
+            });
         });
 
 

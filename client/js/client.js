@@ -1683,7 +1683,9 @@ var taka = taka || function(settings) {
                 var sortedOnlineUsersList = Object.keys(settings.onlineUsers).sort();
 
 
+                var currentUsername;
                 for (var i = 0, numUsers = sortedOnlineUsersList.length; i < numUsers; i++) {
+                    currentUsername = sortedOnlineUsersList[i];
                     var listItem = new Element('li');
                     listItem.css({
                         'listStyle': 'none',
@@ -1691,7 +1693,7 @@ var taka = taka || function(settings) {
                     });
 
 
-                    var avatarSrc = settings.onlineUsers[sortedOnlineUsersList[i]].avatar;
+                    var avatarSrc = settings.onlineUsers[currentUsername].avatar;
 
 
                     if (typeof avatarSrc === 'undefined' || avatarSrc === '') {
@@ -1713,13 +1715,12 @@ var taka = taka || function(settings) {
                     listItem.append(avatarElement);
 
 
-                    var URL = settings.onlineUsers[sortedOnlineUsersList[i]].URL,
-                        listItemText = sortedOnlineUsersList[i],
-                        instanceCount = settings.onlineUsers[sortedOnlineUsersList[i]].instances.length;
-
+                    var URL = settings.onlineUsers[currentUsername].URL,
+                        listItemText = '',
+                        instanceCount = settings.onlineUsers[currentUsername].instances.length;
 
                     if (instanceCount > 1) {
-                        listItemText += ' (' + instanceCount + ')';
+                        listItemText += currentUsername + ' (' + instanceCount + ')';
                     }
 
 
@@ -1736,7 +1737,32 @@ var taka = taka || function(settings) {
                         listItem.append(listItemLink);
                     }
                     else { 
-                        listItem.appendText(listItemText);
+                        listItem.appendText(currentUsername);
+                    }
+
+
+                    if (isStaff()) {
+                        var banUser = new Element('a');
+                        banUser.addClass('fa');
+                        banUser.addClass('fa-ban');
+                        banUser.setAttributes({
+                            'href': '#',
+                            'title': 'Ban this user'
+                        });
+                        banUser.HTMLElement.dataset.username = currentUsername;
+                        banUser.css({
+                            'float': 'right',
+                            'position': 'relative',
+                            'textDecoration': 'none',
+                            'top': '2px'
+                        });
+                        banUser.on('click', function(event) {
+                            event.preventDefault();
+                            socket.emit('banUsername', {
+                                username: this.dataset.username
+                            });
+                        });
+                        listItem.append(banUser);
                     }
 
 
@@ -1766,6 +1792,12 @@ var taka = taka || function(settings) {
              * @readonly
              */
             var SocketEvents = {
+
+
+                banNotice: function(data) {
+                    console.log(data);
+                    socket.disconnect();
+                },
 
 
                 /**

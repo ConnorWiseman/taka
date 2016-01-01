@@ -9,10 +9,15 @@
  * @readonly
  */
 module.exports = function(socket, next) {
+    if (socket.session.role === 'banned') {
+        return next();
+    }
+
+
     socket.join(socket.session.username);
 
 
-    if (socket.can('deleteMessage')) {
+    if (socket.isStaff()) {
         socket.join('staff');
     }
     else {

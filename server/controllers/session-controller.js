@@ -3,7 +3,8 @@
 
 var mongoose = require('mongoose'),
     uuid = require('node-uuid'),
-    validator = require('validator');
+    validator = require('validator'),
+    guestName = require('../utilities/guest-name.js');
 
 
 var SessionModel = mongoose.model('Session');
@@ -117,6 +118,5 @@ exports.regenerate = function(session_id, user, callback) {
  * @readonly
  */
 exports.guestName = function(session_id) {
-    var value = parseInt(session_id.slice(-5), 16) % 100000;
-    return 'Guest' + value;
+    return guestName.generate(session_id);
 };

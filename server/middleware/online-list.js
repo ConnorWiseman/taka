@@ -12,6 +12,9 @@ var OnlineUsers = require('../utilities/online-users.js');
  * @readonly
  */
 module.exports = function(socket, next) {
+    if (socket.session.role === 'banned') {
+        return next();
+    }
 
 
     OnlineUsers.add(socket);

@@ -57,16 +57,6 @@ module.exports = function(socket, next) {
     };
 
 
-    /**
-     * Refuses the incoming socket connection.
-     * @readonly
-     */
-    var denyIncomingSocket = function() {
-        // client is banned
-        return;
-    };
-
-
     // Start the session.
     Session.start(session_id, function(error, result) {
         if (error) {
@@ -86,7 +76,11 @@ module.exports = function(socket, next) {
 
 
             if (result !== null) {
-                return denyIncomingSocket();
+                socket.session.role = 'banned';
+                socket.emit('banNotice', {
+                    reason: result.reason,
+                    expires: result.expires
+                });
             }
 
 

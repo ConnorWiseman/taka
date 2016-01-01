@@ -3,7 +3,8 @@
 
 var mongoose = require('mongoose'),
     crypto = require('crypto'),
-    validator = require('validator');
+    validator = require('validator'),
+    guestName = require('../utilities/guest-name.js');
 
 
 var UserModel = mongoose.model('User');
@@ -27,6 +28,9 @@ exports.register = function(credentials, callback) {
 
 
     user.username = String(credentials.username);
+    if (guestName.check(user.username)) {
+        return callback('Guest names are reserved.');
+    }
     user.password = crypto.createHash('sha256').update(String(credentials.password)).digest('hex');
 
 

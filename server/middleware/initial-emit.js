@@ -13,7 +13,9 @@ var Message = require('../controllers/message-controller.js'),
  * @readonly
  */
 module.exports = function(socket, next) {
-
+    if (socket.session.role === 'banned') {
+        return next();
+    }
 
     /**
      * Publicly exposed session data.
@@ -21,6 +23,8 @@ module.exports = function(socket, next) {
      * @property id       - The session id.
      * @property role     - The user role used by the session.
      * @property username - The username associated with the session.
+     * @property avatar   - The current user's avatar.
+     * @property URL      - The current user's URL.
      * @readonly
      */
     var sessionData = {

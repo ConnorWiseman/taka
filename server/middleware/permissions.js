@@ -10,19 +10,26 @@
  * @readonly
  */
 var permissions = {
+banned: {
+    banNotice: true
+},
     guest: {
+        banNotice: true,
         loadMessages: true,
         registerUser: true,
         sendMessage: true,
         signInAttempt: true
     },
     user: {
+        banNotice: true,
         loadMessages: true,
         sendMessage: true,
         signOut: true,
         updateSettings: true
     },
     mod: {
+        banNotice: true,
+        banUsername: true,
         loadMessages: true,
         deleteMessage: true,
         sendMessage: true,
@@ -31,6 +38,8 @@ var permissions = {
         viewIP: true
     },
     admin: {
+        banNotice: true,
+        banUsername: true,
         loadMessages: true,
         deleteMessage: true,
         sendMessage: true,
@@ -87,9 +96,7 @@ module.exports = function(socket, next) {
      * @readonly
      */
     socket.emit = function() {
-        if (socket.session.role !== 'banned') {
-            return emit.apply(socket, arguments);
-        }
+        return emit.apply(socket, arguments);
     };
 
 
@@ -99,12 +106,13 @@ module.exports = function(socket, next) {
      * @readonly
      */
     socket.onevent = function(packet) {
-        if (socket.session.role === 'banned') {
-            socket.disconnect();
+        if (this.session.role === 'banned') {
             return;
         }
-        if (socket.can(arguments[0].data[0])) {
-            return onevent.apply(socket, arguments);
+
+
+        if (this.can(arguments[0].data[0])) {
+            return onevent.apply(this, arguments);
         }
     };
 
