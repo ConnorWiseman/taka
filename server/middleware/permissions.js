@@ -86,18 +86,7 @@ module.exports = function(socket, next) {
     };
 
 
-    var emit = socket.emit,
-        onevent = socket.onevent;
-
-
-    /**
-     * Overwrites the built-in emit method of the socket to disallow emitting to
-     * banned clients.
-     * @readonly
-     */
-    socket.emit = function() {
-        return emit.apply(socket, arguments);
-    };
+    var onevent = socket.onevent;
 
 
     /**

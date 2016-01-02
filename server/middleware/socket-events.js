@@ -247,9 +247,8 @@ module.exports = function(io) {
             User.register(credentials, function(error, userResult) {
                 if (error) {
                     if (error.code === 11000) {
-                        // Username is taken.
+                        socket.emit('errorNotice', '0');
                     }
-                    console.log(error);
                     return;
                 }
 
@@ -268,8 +267,16 @@ module.exports = function(io) {
         socket.on('signInAttempt', function(credentials) {
             User.authorize(credentials, function(error, userResult) {
                 if (error) {
-                    console.log(error);
-                    // sign in failed
+                    if (error === 'User not found.') {
+                        socket.emit('errorNotice', '1');
+                    }
+
+
+                    if (error === 'Password mismatch.') {
+                        socket.emit('errorNotice', '2');
+                    }
+
+
                     return;
                 }
 

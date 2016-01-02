@@ -518,9 +518,6 @@ var taka = taka || function(settings) {
                 ogg: './audio.click.ogg'
             };
         }
-        if (typeof settings.spacing === 'undefined') {
-            settings.spacing = 4;
-        }
         if (typeof settings.animateMessages === 'undefined') {
             settings.animateMessages = true;
         }
@@ -614,9 +611,9 @@ var taka = taka || function(settings) {
                 'display': 'inline-block',
                 'float': 'left',
                 'height': (settings.height - 98) + 'px',
-                'margin': (settings.spacing * 2) + 'px',
+                'margin': '4px',
                 'overflow': 'auto',
-                'width': (settings.width - (settings.spacing * 4)) + 'px'
+                'width': (settings.width - 16) + 'px'
             });
             messageWrapper.on('scroll', function(event) {
                 if (messageWrapper.HTMLElement.scrollTop === 0 && messageList.HTMLElement.firstElementChild) {
@@ -661,6 +658,41 @@ var taka = taka || function(settings) {
             };
 
 
+            var createError = function(errorMessage) {
+                var error = new Element('div');
+                error.css({
+                    'backgroundColor': 'rgba(255, 0, 0, 0.1)',
+                    'borderRadius': '2px',
+                    'clear': 'both',
+                    'margin': '4px',
+                    'padding': '4px',
+                    'textAlign': 'center',
+                    'fontSize': '80%'
+                });
+                error.text(errorMessage);
+                return error;
+            };
+
+
+            /**
+             * @param {Object}   data                   - A message object in JSON format.
+             * @param {boolean} [forceScroll]           - Whether or not to force scroll the message list. Optional.
+             * @param {argumentlessCallback} [callback] - A callback to execute. Optional.
+             * @readonly
+             */
+            var addError = function(errorMessage, callback) {
+                var atBottom = (messageWrapper.HTMLElement.scrollHeight - messageWrapper.HTMLElement.scrollTop) === messageWrapper.HTMLElement.clientHeight;
+
+                messageList.append(createError(errorMessage));
+                scrollMessages(atBottom, true, settings.animateMessages);
+
+
+                if (callback && typeof(callback) === 'function') {
+                    return callback();
+                }
+            };
+
+
             /**
              * Creates a message for insertion into the message list.
              * @param {Object} data - A message JSON object.
@@ -673,8 +705,8 @@ var taka = taka || function(settings) {
                 message.setAttribute('id', data._id);
                 message.css({
                     'clear': 'both',
-                    'minHeight': (settings.spacing + 35) + 'px',
-                    'padding': settings.spacing + 'px ' + settings.spacing + 'px 0 0',
+                    'minHeight': '39px',
+                    'padding': '4px 4px 0 0',
                     'textAlign': 'left',
                     'wordWrap': 'break-word'
                 });
@@ -729,7 +761,7 @@ var taka = taka || function(settings) {
                 });
                 avatar.css({
                     'float': 'left',
-                    'margin': '0 ' + settings.spacing + 'px ' + settings.spacing + 'px 0',
+                    'margin': '0 4px 4px 0',
                     'MozUserSelect': 'none',
                     'webkitUserSelect': 'none',
                     'msUserSelect': 'none',
@@ -774,7 +806,7 @@ var taka = taka || function(settings) {
                     deleteLink.css({
                         'color': '#aa0000',
                         'display': 'inline-block',
-                        'margin': '0 ' + settings.spacing + 'px',
+                        'margin': '0 4px',
                         'textDecoration': 'none'
                     });
                     deleteLink.on('click', function(event) {
@@ -881,7 +913,7 @@ var taka = taka || function(settings) {
 
 
                 return message.replace(imgRegex, function(url) {
-                    return '<img src="' + url + '" style="clear: both; display: block; margin: ' + (settings.spacing * 4) + 'px auto; max-height: ' + (settings.height - 140) + 'px; max-width: ' + (settings.width - 40) + 'px;" />';
+                    return '<img src="' + url + '" style="clear: both; display: block; margin: 16px auto; max-height: ' + (settings.height - 140) + 'px; max-width: ' + (settings.width - 40) + 'px;" />';
                 });
             };
 
@@ -988,7 +1020,7 @@ var taka = taka || function(settings) {
             var chatForm = new Element('form');
             chatForm.css({
                 'display': 'block',
-                'margin': '0 ' + (settings.spacing * 2 ) + 'px ' + settings.spacing + 'px'
+                'margin': '0 8px 4px'
             });
             container.append(chatForm);
             var chatTextarea = new Element('textarea');
@@ -1001,9 +1033,9 @@ var taka = taka || function(settings) {
                 'fontFamily': 'inherit',
                 'fontSize': 'inherit',
                 'height': '56px',
-                'padding': settings.spacing + 'px',
+                'padding': '4px',
                 'resize': 'none',
-                'width': (settings.width - (settings.spacing * 4)) + 'px'
+                'width': (settings.width - 16) + 'px'
             });
             chatForm.append(chatTextarea);
 
@@ -1094,7 +1126,7 @@ var taka = taka || function(settings) {
 
 
                     if (messageContents[0] === '/') {
-                        console.log('hey');
+                        // Handle IRC-style commands here
                     }
 
 
@@ -1117,7 +1149,7 @@ var taka = taka || function(settings) {
                     'color': '#fafafa',
                     'cursor': 'move',
                     'fontWeight': 'bold',
-                    'padding': (settings.spacing * 2) + 'px',
+                    'padding': '8px',
                     'MozUserSelect': 'none',
                     'webkitUserSelect': 'none',
                     'msUserSelect': 'none',
@@ -1133,11 +1165,11 @@ var taka = taka || function(settings) {
                 closePopup.css({
                     'color': '#aa0000',
                     'float': 'right',
-                    'left': (settings.spacing / 2) + 'px',
-                    'padding': settings.spacing + 'px',
+                    'left': '2px',
+                    'padding': '4px',
                     'position': 'relative',
                     'textDecoration': 'none',
-                    'top': '-' + (settings.spacing) + 'px'
+                    'top': '-4px'
                 });
                 closePopup.on('click', function(event) {
                     event.preventDefault();
@@ -1297,7 +1329,7 @@ var taka = taka || function(settings) {
                 event.preventDefault();
             });
             signInForm.css({
-                'padding': (settings.spacing * 2) + 'px'
+                'padding': '8px'
             });
 
 
@@ -1305,8 +1337,8 @@ var taka = taka || function(settings) {
             usernameInput.css({
                 'boxSizing': 'border-box',
                 'display': 'block',
-                'padding': settings.spacing + 'px',
-                'margin': '0 auto ' + (settings.spacing * 2) + 'px',
+                'padding': '4px',
+                'margin': '0 auto 8px',
                 'width': '140px'
             });
             usernameInput.setAttribute('placeholder', 'Username');
@@ -1317,8 +1349,8 @@ var taka = taka || function(settings) {
             passwordInput.css({
                 'boxSizing': 'border-box',
                 'display': 'block',
-                'padding': settings.spacing + 'px',
-                'margin': '0 auto ' + (settings.spacing * 2) + 'px',
+                'padding': '4px',
+                'margin': '0 auto 8px',
                 'width': '140px'
             });
             passwordInput.setAttributes({
@@ -1362,7 +1394,7 @@ var taka = taka || function(settings) {
                 'boxSizing': 'border-box',
                 'display': 'inline-block',
                 'padding': '2px',
-                'margin': '0 0 0 ' + settings.spacing + 'px',
+                'margin': '0 0 0 4px',
                 'textAlign': 'center',
                 'width': '68px'
             });
@@ -1400,7 +1432,7 @@ var taka = taka || function(settings) {
                 event.preventDefault();
             });
             settingsForm.css({
-                'padding': (settings.spacing * 2) + 'px'
+                'padding': '8px'
             });
 
 
@@ -1408,8 +1440,8 @@ var taka = taka || function(settings) {
             avatarInput.css({
                 'boxSizing': 'border-box',
                 'display': 'block',
-                'padding': settings.spacing + 'px',
-                'margin': '0 auto ' + (settings.spacing * 2) + 'px',
+                'padding': '4px',
+                'margin': '0 auto 8px',
                 'width': '140px'
             });
             avatarInput.setAttribute('placeholder', 'Avatar');
@@ -1420,8 +1452,8 @@ var taka = taka || function(settings) {
             urlInput.css({
                 'boxSizing': 'border-box',
                 'display': 'block',
-                'padding': settings.spacing + 'px',
-                'margin': '0 auto ' + (settings.spacing * 2) + 'px',
+                'padding': '4px',
+                'margin': '0 auto 8px',
                 'width': '140px'
             });
             urlInput.setAttribute('placeholder', 'URL');
@@ -1495,7 +1527,7 @@ var taka = taka || function(settings) {
             var chatMenu = new Element('div');
             chatMenu.css({
                 'clear': 'both',
-                'margin': '0 ' + (settings.spacing * 2) + 'px',
+                'margin': '0 8px',
                 'MozUserSelect': 'none',
                 'webkitUserSelect': 'none',
                 'msUserSelect': 'none',
@@ -1526,7 +1558,7 @@ var taka = taka || function(settings) {
             onlineUsersIcon.addClass('fa');
             onlineUsersIcon.addClass('fa-users');
             onlineUsersTotal.css({
-                'margin': '0 0 0 ' + settings.spacing + 'px'
+                'margin': '0 0 0 4px'
             });
             onlineUsers.append(onlineUsersIcon);
             onlineUsers.append(onlineUsersTotal);
@@ -1547,7 +1579,7 @@ var taka = taka || function(settings) {
             volumeControls.addClass('fa');
             volumeControls.addClass(getVolumeIcon(settings.volume));
             volumeControls.css({
-                'margin': '0 ' + settings.spacing + 'px 0 0',
+                'margin': '0 4px 0 0',
                 'textAlign': 'center',
                 'textDecoration': 'none',
                 'width': '12px'
@@ -1584,7 +1616,7 @@ var taka = taka || function(settings) {
             settingControls.addClass('fa-cog');
             settingControls.css({
                 'display': 'none',
-                'margin': '0 ' + settings.spacing + 'px 0 0',
+                'margin': '0 4px 0 0',
                 'textDecoration': 'none'
             });
             settingControls.on('click', function(event) {
@@ -1741,7 +1773,7 @@ var taka = taka || function(settings) {
                         'width': '16'
                     });
                     avatarElement.css({
-                        'margin': '0 ' + settings.spacing + 'px -2px 0',
+                        'margin': '0 4px -2px 0',
                         'position': 'relative',
                         'top': '2px'
                     });
@@ -1828,6 +1860,23 @@ var taka = taka || function(settings) {
              */
             var SocketEvents = {
 
+                errorNotice: function(errorCode) {
+                    switch(errorCode) {
+                        case '0':
+                            addError('That username is unavailable.');
+                            break;
+                        case '1':
+                            addError('No such user exists.');
+                            break;
+                        case '2':
+                            addError('Username/password mismatch.');
+                            break;
+                        default:
+                            addError('An unspecified error has occurred.');
+                            break;
+                    }
+                },
+
 
                 /**
                  * Locks down the chatbox, displays ban information, and disconnects the client.
@@ -1835,7 +1884,6 @@ var taka = taka || function(settings) {
                  * @readonly
                  */
                 banNotice: function(data) {
-                    console.log(data);
                     signInWindow.hide();
                     settingsWindow.hide();
                     onlineUsersWindow.hide();
