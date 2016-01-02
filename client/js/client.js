@@ -1114,27 +1114,6 @@ var taka = taka || function(settings) {
             };
 
 
-            chatForm.on('submit', function(event) {
-                event.preventDefault();
-
-
-                if (validateTextarea()) {
-                    var messageContents = chatTextarea.HTMLElement.value;
-
-
-                    disableTextarea();
-
-
-                    if (messageContents[0] === '/') {
-                        // Handle IRC-style commands here
-                    }
-
-
-                    socket.emit('sendMessage', messageContents);
-                }
-            });
-
-
             /**
              * Creates a title for the contents of the popup window.
              * @param {string} titleText     - The title text.
@@ -1256,7 +1235,9 @@ var taka = taka || function(settings) {
                 });
 
 
-                popup.append(popupTitle(titleText, popup));
+                var title = popupTitle(titleText, popup);
+                popup.title = title;
+                popup.append(title);
                 popup.addClass('popup-window');
                 popup.css({
                     'backgroundColor': '#ffffff',
@@ -1319,6 +1300,264 @@ var taka = taka || function(settings) {
 
                 return popup;
             };
+
+
+            /**
+             *
+             */
+            var parseCommand = function(string) {
+                string = string.replace(/^\s*\//, '');
+
+                var regex = /^ *(?:(?!")([^ ]+)|"((?:[^\\"]|\\[\\"])*)")/;
+                var tokens = [];
+                var arr;
+
+                while ((arr = string.match(regex)) !== null) {
+                    if (arr[1] !== void 0) {
+                        tokens.push(arr[1]);
+                    } else {
+                        tokens.push(arr[2].replace(/\\([\\"])/g, '$1'));
+                    }
+                    string = string.substring(arr[0].length);
+                }
+
+                if (/^ *$/.test(string) && tokens.length) {
+                    return tokens;
+                }
+                return null;
+            };
+
+
+            /**
+             *
+             */
+            var displayHelp = function() {
+                console.log('help');
+                clearTextarea();
+                enableTextarea();
+            };
+
+
+            /**
+             * Converts a time string in virtually any 1y2d3h4m1s-like format to the appropriate
+             * value in seconds.
+             * @param {string} timeString - A time string to convert.
+             * @returns {number} - A number in seconds.
+             */
+            var timeInSeconds = function(timeString) {
+                if (!isNaN(timeString)) {
+                    return timeString;
+                }
+
+                timeString = timeString.toLowerCase();
+
+                var timeValues = {
+                    y: 31536000,
+                    d: 86400,
+                    h: 3600,
+                    m: 60,
+                    s: 1
+                };
+
+                var seconds = 0;
+
+                for (var unit in timeValues) {
+                    var regex = new RegExp('\\d+' + unit),
+                        match = timeString.match(regex);
+                    if (match !== null) {
+                        seconds += Number(match[0].replace(unit, '')) * timeValues[unit];
+                    }
+                }
+
+                return seconds;
+            };
+
+
+            /**
+             *
+             */
+            var banUsername = function(dataArray) {
+                if (!isStaff()) {
+                    addError('You are not authorized to perform this action.');
+                    clearTextarea();
+                    enableTextarea();
+                    return;
+                }
+
+
+                if (typeof dataArray[1] !== 'undefined') {
+                    if (typeof dataArray[2] === 'undefined') {
+                        dataArray.push(undefined);
+                    }
+                    else {
+                        dataArray[2] = timeInSeconds(dataArray[2]);
+                    }
+
+
+                    if (typeof dataArray[3] === 'undefined') {
+                        dataArray.push(undefined);
+                    }
+                    else {
+                        dataArray[3] = dataArray.splice(3).join(' ');
+                    }
+
+
+                    socket.emit('banUsername', {
+                        username: dataArray[1],
+                        duration: dataArray[2],
+                        reason: dataArray[3]
+                    });
+                }
+                else {
+                    addError('/ban <username> <duration> "<reason>"');
+                }
+                clearTextarea();
+                enableTextarea();
+            };
+
+
+            /**
+             *
+             */
+            var unbanUsername = function(dataArray) {
+                if (!isStaff()) {
+                    addError('You are not authorized to perform this action.');
+                    clearTextarea();
+                    enableTextarea();
+                    return;
+                }
+
+
+                if (typeof dataArray[1] !== 'undefined') {
+                    socket.emit('unbanUsername', dataArray[1]);
+                }
+                else {
+                    addError('/unban <username>');
+                }
+                clearTextarea();
+                enableTextarea();
+            };
+
+
+            var clearChatConfirmWindow = popupWindow('Clear chat history', 160, 148),
+                clearChatConfirmForm = new Element('form');
+            clearChatConfirmForm.css({
+                'padding': '8px'
+            });
+            clearChatConfirmForm.on('submit', function(event) {
+                event.preventDefault();
+            });
+            clearChatConfirmWindow.title.on('click', function(event) {
+                clearTextarea();
+                enableTextarea();
+            });
+            var clearChatConfirmFormWarning = new Element('p');
+            clearChatConfirmFormWarning.css({
+                'margin': '0 0 12px',
+                'padding': '0'
+            });
+            clearChatConfirmFormWarning.text('This will clear the entire chat history. Continue?');
+            clearChatConfirmForm.append(clearChatConfirmFormWarning);
+            var clearChatConfirmButtons = new Element('div');
+            clearChatConfirmButtons.css({
+                'margin': '0 auto',
+                'width': '140px;'
+            });
+            var confirmButton = new Element('button'),
+                cancelButton = new Element('button');
+            confirmButton.css({
+                'boxSizing': 'border-box',
+                'display': 'inline-block',
+                'padding': '2px',
+                'margin': '0',
+                'textAlign': 'center',
+                'width': '70px'
+            });
+            confirmButton.text('Clear it!');
+            confirmButton.on('click', function(event) {
+                socket.emit('clearChat');
+                clearTextarea();
+                enableTextarea();
+                clearChatConfirmWindow.hide();
+            });
+            cancelButton.css({
+                'boxSizing': 'border-box',
+                'display': 'inline-block',
+                'padding': '2px',
+                'margin': '0',
+                'textAlign': 'center',
+                'width': '70px'
+            });
+            cancelButton.text('Wait...');
+            cancelButton.on('click', function(event) {
+                clearTextarea();
+                enableTextarea();
+                clearChatConfirmWindow.hide();
+            });
+            clearChatConfirmButtons.append(confirmButton);
+            clearChatConfirmButtons.append(cancelButton);
+            clearChatConfirmForm.append(clearChatConfirmButtons);
+            clearChatConfirmWindow.append(clearChatConfirmForm);
+
+
+            container.append(clearChatConfirmWindow);
+
+
+            /**
+             *
+             */
+            var clearChat = function() {
+                if (!isStaff()) {
+                    addError('You are not authorized to perform this action.');
+                    clearTextarea();
+                    enableTextarea();
+                    return;
+                }
+
+                clearChatConfirmWindow.show();
+            };
+
+
+            chatForm.on('submit', function(event) {
+                event.preventDefault();
+
+
+                if (validateTextarea()) {
+                    var messageContents = chatTextarea.HTMLElement.value;
+
+
+                    disableTextarea();
+
+
+                    if (messageContents[0] === '/') {
+                        var tokens = parseCommand(messageContents);
+                        switch(tokens[0]) {
+                            case '?':
+                            case 'help':
+                                displayHelp();
+                                break;
+                            case 'ban':
+                                banUsername(tokens);
+                                break;
+                            case 'unban':
+                                unbanUsername(tokens);
+                                break;
+                            case 'clear':
+                                clearChat();
+                                break;
+                            default:
+                                socket.emit('sendMessage', messageContents);
+                                break;
+                        }
+
+
+                        return;
+                    }
+
+
+                    socket.emit('sendMessage', messageContents);
+                }
+            });
 
 
             var signInWindow = popupWindow('Sign In / Register', 160, 148);
@@ -1862,6 +2101,12 @@ var taka = taka || function(settings) {
              */
             var SocketEvents = {
 
+            
+                /**
+                 * Displays an error notice in the chat.
+                 * @param {string} errorCode - An error code.
+                 * @readonly
+                 */
                 errorNotice: function(errorCode) {
                     switch(errorCode) {
                         case '0':
@@ -1875,6 +2120,9 @@ var taka = taka || function(settings) {
                             break;
                         case '3':
                             addError('You can\'t ban an admin!');
+                            break;
+                        case '4':
+                            addError('Unable to ban nonexistent user.');
                             break;
                         default:
                             addError('An unspecified error has occurred.');
@@ -2176,6 +2424,11 @@ var taka = taka || function(settings) {
                  */
                 deleteMessage: function(data) {
                     messageList.removeChild(document.getElementById(data));
+                },
+
+
+                clearChat: function() {
+                    messageList.removeChildren();
                 }
             };
 

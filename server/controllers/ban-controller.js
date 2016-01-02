@@ -97,6 +97,11 @@ exports.username = function(username, duration, reason, callback) {
     }
     
     User.exists(username, function(error, result) {
+        if (!result) {
+            return callback('Cannot ban nonexistent user.');
+        }
+
+
         if (result.role === 'admin') {
             return callback('Cannot ban chat administrators.');
         }
@@ -109,6 +114,10 @@ exports.username = function(username, duration, reason, callback) {
 
         return insertBanRecord(query, duration, reason, callback);
     });
+};
+
+exports.unbanUsername = function(username) {
+    BanModel.find({ username: username }).remove().exec();
 };
 
 

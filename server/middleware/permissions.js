@@ -30,6 +30,8 @@ banned: {
     mod: {
         banNotice: true,
         banUsername: true,
+        clearChat: true,
+        unbanUsername: true,
         loadMessages: true,
         deleteMessage: true,
         sendMessage: true,
@@ -40,6 +42,8 @@ banned: {
     admin: {
         banNotice: true,
         banUsername: true,
+        clearChat: true,
+        unbanUsername: true,
         loadMessages: true,
         deleteMessage: true,
         sendMessage: true,

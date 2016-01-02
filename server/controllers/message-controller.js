@@ -135,3 +135,24 @@ exports.delete = function(message_id, callback) {
         return callback(null, result);
     });
 };
+
+
+/**
+ *
+ */
+exports.deleteAll = function(callback) {
+    MessageModel.update({
+        deleted: false
+    }, {
+        deleted: true
+    }, {
+        multi: true
+    }).exec(function(error, result) {
+        if (error) {
+            return callback(error);
+        }
+
+
+        return callback(null, result);
+    });
+};

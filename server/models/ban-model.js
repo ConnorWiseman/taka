@@ -6,11 +6,12 @@ var mongoose = require('mongoose');
 
 /**
  * The Mongoose schema definition for ban records.
- * @property {string} username - The username to be banned. Optional.
- * @property {number} ip       - The ip address to be banned. Optional.
- * @property {string} reason   - The reason for this ban.
- * @property {Object} expires  - The date when this ban expires.
+ * @property {string} [username]   - The username to be banned. Optional.
+ * @property {number} [ip_address] - The ip address to be banned. Optional.
+ * @property {string} reason       - The reason for this ban.
+ * @property {Object} expires      - The date when this ban expires.
  * @readonly
+ * @todo Add a field for the user who implemented the ban.
  */
  var banSchemaFields = {
     username: {

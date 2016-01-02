@@ -363,6 +363,11 @@ module.exports = function(io) {
                     }
 
 
+                    if (error === 'Cannot ban nonexistent user.') {
+                        socket.emit('errorNotice', '4');
+                    }
+
+
                     return;
                 }
 
@@ -383,6 +388,28 @@ module.exports = function(io) {
          */
         socket.on('banIP', function(data) {
             banAddress(data.ip_address, data.duration, data.reason);
+        });
+
+
+        /**
+         * Bans a specified user from the application usingan IP address as criteria.
+         * @param {Object} data - An object containing fields to be added to the database.
+         * @readonly
+         */
+        socket.on('unbanUsername', function(username) {
+            Ban.unbanUsername(username);
+        });
+
+
+        /**
+         * Bans a specified user from the application usingan IP address as criteria.
+         * @param {Object} data - An object containing fields to be added to the database.
+         * @readonly
+         */
+        socket.on('clearChat', function() {
+            Message.deleteAll(function(error, result) {
+                io.emit('clearChat');
+            });
         });
 
 

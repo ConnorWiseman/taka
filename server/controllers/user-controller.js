@@ -1,6 +1,11 @@
 'use strict';
 
 
+/**
+ * @todo Users need to be able to change their passwords!
+ */
+
+
 var mongoose = require('mongoose'),
     crypto = require('crypto'),
     validator = require('validator'),
