@@ -1497,6 +1497,7 @@ var taka = taka || function(settings) {
                         avatarInput.css({
                             'boxShadow': '0 0 3px 1px #aa0000'
                         });
+                        addError('Invalid avatar URL.');
                     }
 
 
@@ -1504,6 +1505,7 @@ var taka = taka || function(settings) {
                         urlInput.css({
                             'boxShadow': '0 0 3px 1px #aa0000'
                         });
+                        addError('Invalid URL.');
                     }
                 }
             });
@@ -1870,6 +1872,9 @@ var taka = taka || function(settings) {
                             break;
                         case '2':
                             addError('Username/password mismatch.');
+                            break;
+                        case '3':
+                            addError('You can\'t ban an admin!');
                             break;
                         default:
                             addError('An unspecified error has occurred.');

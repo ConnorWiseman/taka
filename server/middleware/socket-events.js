@@ -358,6 +358,11 @@ module.exports = function(io) {
                     }
 
 
+                    if (error === 'Cannot ban chat administrators.') {
+                        socket.emit('errorNotice', '3');
+                    }
+
+
                     return;
                 }
 
