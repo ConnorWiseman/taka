@@ -19,7 +19,7 @@ var mongoose = require('mongoose');
         type: String,
         unique: true
     },
-    ip: {
+    ip_address: {
         sparse: true,
         type: Number,
         unique: true

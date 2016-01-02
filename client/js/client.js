@@ -772,6 +772,7 @@ var taka = taka || function(settings) {
                         'title': 'Delete message'
                     });
                     deleteLink.css({
+                        'color': '#aa0000',
                         'display': 'inline-block',
                         'margin': '0 ' + settings.spacing + 'px',
                         'textDecoration': 'none'
@@ -1130,6 +1131,7 @@ var taka = taka || function(settings) {
                 closePopup.addClass('fa');
                 closePopup.addClass('fa-times');
                 closePopup.css({
+                    'color': '#aa0000',
                     'float': 'right',
                     'left': (settings.spacing / 2) + 'px',
                     'padding': settings.spacing + 'px',
@@ -1461,14 +1463,14 @@ var taka = taka || function(settings) {
                 else {
                     if (!avatarIsValid) {
                         avatarInput.css({
-                            'boxShadow': '0 0 3px 1px rgba(255, 0, 0, 0.9)'
+                            'boxShadow': '0 0 3px 1px #aa0000'
                         });
                     }
 
 
                     if (!urlIsValid) {
                         urlInput.css({
-                            'boxShadow': '0 0 3px 1px rgba(255, 0, 0, 0.9)'
+                            'boxShadow': '0 0 3px 1px #aa0000'
                         });
                     }
                 }
@@ -1630,7 +1632,6 @@ var taka = taka || function(settings) {
              * @readonly
              */
             var formatExpirationDate = function(date) {
-                console.log(typeof date);
                 var expireDate = new Date(date),
                     expireString = '';
 
@@ -1774,27 +1775,28 @@ var taka = taka || function(settings) {
 
 
                     if (isStaff()) {
-                        var banUser = new Element('a');
-                        banUser.addClass('fa');
-                        banUser.addClass('fa-ban');
-                        banUser.setAttributes({
+                        var banLink = new Element('a');
+                        banLink.addClass('fa');
+                        banLink.addClass('fa-ban');
+                        banLink.setAttributes({
                             'href': '#',
                             'title': 'Ban this user'
                         });
-                        banUser.HTMLElement.dataset.username = currentUsername;
-                        banUser.css({
+                        banLink.HTMLElement.dataset.username = currentUsername;
+                        banLink.css({
+                            'color': '#aa0000',
                             'float': 'right',
                             'position': 'relative',
                             'textDecoration': 'none',
                             'top': '2px'
                         });
-                        banUser.on('click', function(event) {
+                        banLink.on('click', function(event) {
                             event.preventDefault();
                             socket.emit('banUsername', {
                                 username: this.dataset.username
                             });
                         });
-                        listItem.append(banUser);
+                        listItem.append(banLink);
                     }
 
 

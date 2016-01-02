@@ -6,6 +6,9 @@ var mongoose = require('mongoose'),
     guestName = require('../utilities/guest-name.js');
 
 
+var User = require('./user-controller.js');
+
+
 var BanModel = mongoose.model('Ban');
 
 
@@ -34,20 +37,14 @@ var checkForBan = function(query, callback) {
 
 
 /**
- * Adds a new ban record to the database, then executes a given callback with the
- * new ban information.
- * @param {string} string         - Either a username or an IP address.
- * @param {string} reason         - The reason for the new ban.
- * @param {number} duration       - The duration of the new ban, in seconds.
+ * Adds a ban record to the database.
+ * @param {Object} query          - A Mongoose query object.
+ * @param {number} [duration]     - The duration of the ban, in seconds.
+ * @param {string} [reason]       - The reason for the ban.
  * @param {nodeCallback} callback - A callback function to execute.
  * @readonly
  */
-exports.username = function(username, duration, reason, callback) {
-    if (guestName.check(username)) {
-        return callback('Cannot ban guests by username.');
-    }
-
-
+var insertBanRecord = function(query, duration, reason, callback) {
     if (typeof duration === 'undefined') {
         duration = 30;
     }
@@ -60,11 +57,6 @@ exports.username = function(username, duration, reason, callback) {
 
     var expirationDate = new Date();
     expirationDate.setSeconds(expirationDate.getSeconds() + (duration - 60));
-
-
-    var query = {
-        username: username
-    };
 
 
     var update = {
@@ -87,6 +79,55 @@ exports.username = function(username, duration, reason, callback) {
 
         return callback(null, result);
     });
+};
+
+
+/**
+ * Adds a new ban record for the specified username to the database,
+ * then executes a given callback.
+ * @param {string} username       - A username to ban.
+ * @param {number} [duration]     - The duration of the ban, in seconds.
+ * @param {string} [reason]       - The reason for the ban.
+ * @param {nodeCallback} callback - A callback function to execute.
+ * @readonly
+ */
+exports.username = function(username, duration, reason, callback) {
+    if (guestName.check(username)) {
+        return callback('Cannot ban guests by username.');
+    }
+    
+    User.exists(username, function(error, result) {
+        if (result.role === 'admin') {
+            return callback('Cannot ban chat administrators.');
+        }
+
+
+        var query = {
+            username: username
+        };
+
+
+        return insertBanRecord(query, duration, reason, callback);
+    });
+};
+
+
+/**
+ * Adds a new ban record for the specified IP address to the database,
+ * then executes a given callback.
+ * @param {string} ip_address     - An IP address.
+ * @param {number} [duration]     - The duration of the ban, in seconds.
+ * @param {string} [reason]       - The reason for the ban.
+ * @param {nodeCallback} callback - A callback function to execute.
+ * @readonly
+ */
+exports.IP = function(ip_address, duration, reason, callback) {
+    var query = {
+        ip_address: ip_address
+    };
+
+
+    return insertBanRecord(query, duration, reason, callback);
 };
 
 

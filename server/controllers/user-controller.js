@@ -14,6 +14,18 @@ var UserModel = mongoose.model('User');
  * A traditional Node.js "errorback" function.
  * @callback nodeCallback
  */
+ 
+ 
+ exports.exists = function(username, callback) {
+     UserModel.find({username: username}).limit(1).lean().exec(function(error, result) {
+         if (error) {
+             return callback(error);
+         }
+
+
+         return callback(null, result[0]);
+     });
+ };
 
 
 /**
