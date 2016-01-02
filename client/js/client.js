@@ -1625,6 +1625,38 @@ var taka = taka || function(settings) {
 
 
             /**
+             * Formats a ban expiration date string into a human-readable format.
+             * @param {string} date - A date string.
+             * @readonly
+             */
+            var formatExpirationDate = function(date) {
+                console.log(typeof date);
+                var expireDate = new Date(date),
+                    expireString = '';
+
+                var monthNames = [
+                    'January', 'February', 'March',
+                    'April', 'May', 'June', 'July',
+                    'August', 'September', 'October',
+                    'November', 'December'
+                ];
+
+                var day = expireDate.getDate();
+                var monthIndex = expireDate.getMonth();
+                var year = expireDate.getFullYear();
+                var hours = expireDate.getHours();
+                var minutes = expireDate.getMinutes() + 1;
+                minutes = (minutes < 10) ? '0' + minutes : minutes;
+                var ampm = hours >= 12 ? ' PM' : ' AM';
+                hours = (hours > 12) ? hours - 12 : hours;
+
+                expireString = hours + ':' + minutes + ampm + ' on ' + monthNames[monthIndex] + ' ' + day + ', ' + year;
+
+                return expireString;
+            };
+
+
+            /**
              * Handles changes in the UI when session data is updated.
              * @readonly
              */
@@ -1777,6 +1809,7 @@ var taka = taka || function(settings) {
             /**
              * Socket event functions wrapper.
              * @namespace
+             * @method banNotice          - Displays ban information from the server.
              * @method sessionStart       - Incoming session data from the server.
              * @method sessionUpdate      - Updated session data from signing in/out.
              * @method settingsUpdate     - Updated settings data.
@@ -1794,6 +1827,11 @@ var taka = taka || function(settings) {
             var SocketEvents = {
 
 
+                /**
+                 * Locks down the chatbox, displays ban information, and disconnects the client.
+                 * @param {Object} data - An object containing ban information in a reason-expires pair.
+                 * @readonly
+                 */
                 banNotice: function(data) {
                     signInWindow.hide();
                     settingsWindow.hide();
@@ -1801,9 +1839,31 @@ var taka = taka || function(settings) {
                     chatMenu.css({
                         'display': 'none'
                     });
+
+
                     messageList.removeChildren();
+                    var banInformation = new Element('div');
+                    banInformation.css({
+                        'margin': '50% auto 0',
+                        'textAlign': 'center'
+                    });
+                    var banInformationNotice = new Element('div');
+                    banInformationNotice.text('You have been banned for the following reason: ');
+                    banInformation.append(banInformationNotice);
+                    var banInformationReason = new Element('div');
+                    banInformationReason.css({
+                        'fontWeight': 'bold',
+                        'margin': '1em auto'
+                    });
+                    banInformationReason.text(data.reason);
+                    banInformation.append(banInformationReason);
+                    var banInformationExpires = new Element('div');
+                    banInformationExpires.text('Your ban will expire at ' + formatExpirationDate(data.expires) + '.');
+                    banInformation.append(banInformationExpires);
+                    messageList.append(banInformation);
+
+
                     disableTextarea();
-                    console.log(data);
                     socket.disconnect();
                 },
 
