@@ -16,16 +16,22 @@ var UserModel = mongoose.model('User');
  */
  
  
- exports.exists = function(username, callback) {
-     UserModel.find({username: username}).limit(1).lean().exec(function(error, result) {
-         if (error) {
-             return callback(error);
-         }
+/**
+ * Checks to see if a user with the specified username exists in the database.
+ * @arg {string} username           - The username to check.
+ * @param {nodeCallback} callback   - A callback function to execute.
+ * @readonly
+ */
+exports.exists = function(username, callback) {
+    UserModel.find({username: username}).limit(1).lean().exec(function(error, result) {
+        if (error) {
+            return callback(error);
+        }
 
 
-         return callback(null, result[0]);
-     });
- };
+        return callback(null, result[0]);
+    });
+};
 
 
 /**

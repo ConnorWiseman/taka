@@ -122,6 +122,11 @@ exports.username = function(username, duration, reason, callback) {
  * @readonly
  */
 exports.IP = function(ip_address, duration, reason, callback) {
+    if (address.isValid(ip_address)) {
+        ip_address =  address.toInt(ip_address)
+    }
+
+
     var query = {
         ip_address: ip_address
     };
@@ -155,7 +160,7 @@ exports.checkUsername = function(username, callback) {
  */
 exports.checkIP = function(ip_address, callback) {
     var query = {
-        ip: address.toInt(ip_address)
+        ip_address: address.toInt(ip_address)
     };
 
 
@@ -173,7 +178,7 @@ exports.checkSocket = function(socket, callback) {
     var query = {
         $or:[
             { username: socket.session.username },
-            { ip: address.toInt(socket.session.ip_address) }
+            { ip_address: address.toInt(socket.session.ip_address) }
         ]
     };
 

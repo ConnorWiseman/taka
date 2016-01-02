@@ -1,6 +1,9 @@
 'use strict';
 
 
+var address = require('../utilities/ip-address.js');
+
+
 /**
  * Joins an incoming websocket connection to all necessary rooms.
  * 
@@ -15,6 +18,7 @@ module.exports = function(socket, next) {
 
 
     socket.join(socket.session.username);
+    socket.join(socket.session.ip_address);
 
 
     if (socket.isStaff()) {

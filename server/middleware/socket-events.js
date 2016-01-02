@@ -18,6 +18,29 @@ module.exports = function(io) {
 
 
     /**
+     * Bans the specified IP address.
+     * @param {string} ip_address - An IPv4 address to ban.
+     * @param {number} duration   - The length of the ban, in seconds.
+     * @param {string} reason     - The reason for the ban.
+     * @readonly
+     */
+    var banAddress = function(ip_address, duration, reason) {
+        Ban.IP(ip_address, duration, reason, function(error, result) {
+            if (error) {
+                return;
+            }
+
+
+            io.sockets.in(ip_address).emit('banNotice', {
+                type: 'ip',
+                reason: result.reason,
+                expires: result.expires
+            });
+        });
+    };
+
+
+    /**
      * Attaches event listeners to the current socket.
      * 
      * @param socket - An object representing the current websocket connection.
@@ -279,15 +302,43 @@ module.exports = function(io) {
             Ban.username(data.username, data.duration, data.reason, function(error, result) {
                 if (error) {
                     if (error === 'Cannot ban guests by username.') {
-                        console.log('guest');
-                        //get IP of guest to ban instead
+                        var guestClients = [],
+                            roomName = io.sockets.adapter.rooms[data.username];
+
+
+                        if (roomName) {
+                            for (var client in roomName) {
+                                guestClients.push(io.sockets.adapter.nsp.connected[client]);
+                            }
+                        }
+
+
+                        var addressesToBan = [];
+                        for (var i = 0, numGuestClients = guestClients.length; i < numGuestClients; i++) {
+                            var ip_address = guestClients[i].session.ip_address;
+                            if (addressesToBan.indexOf(ip_address) === -1) {
+                                addressesToBan.push(ip_address);
+                            }
+                        }
+
+
+                        if (addressesToBan.length === 1) {
+                            banAddress(addressesToBan[0]);
+                        }
+                        else {
+                            for (var j = 0, numAddresses = addressesToBan.length; j < numAddresses; j++) {
+                                banAddress(addressesToBan[j]);
+                            }
+                        }
                     }
-                    console.log(error);
+
+
                     return;
                 }
 
 
                 io.sockets.in(result.username).emit('banNotice', {
+                    type: 'username',
                     reason: result.reason,
                     expires: result.expires
                 });
