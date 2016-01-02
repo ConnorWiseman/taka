@@ -2075,7 +2075,7 @@ var taka = taka || function(settings) {
                         instanceCount = settings.onlineUsers[currentUsername].instances.length;
 
                     if (instanceCount > 1) {
-                        listItemText += currentUsername + ' (' + instanceCount + ')';
+                        listItemText = currentUsername + ' (' + instanceCount + ')';
                     }
 
 
