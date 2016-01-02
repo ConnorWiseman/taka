@@ -2154,6 +2154,9 @@ var taka = taka || function(settings) {
                         case '4':
                             addError('Unable to ban nonexistent user.');
                             break;
+                        case '5':
+                            addError('If you continue to spam, you will be banned.');
+                            break;
                         default:
                             addError('An unspecified error has occurred.');
                             break;

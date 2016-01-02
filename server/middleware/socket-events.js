@@ -5,7 +5,8 @@ var Session = require('../controllers/session-controller.js'),
     Ban = require('../controllers/ban-controller.js'),
     User = require('../controllers/user-controller.js'),
     Message = require('../controllers/message-controller.js'),
-    OnlineUsers = require('../utilities/online-users.js');
+    OnlineUsers = require('../utilities/online-users.js'),
+    RateLimiter = require('../utilities/rate-limiter.js');
 
 
 /**
@@ -98,12 +99,38 @@ module.exports = function(io) {
         });
 
 
+        var MessageRateLimiter = new RateLimiter(6, 5);
+
+
         /**
          * Adds a new message to the database, then sends the message to all connected clients.
          * @param {Object} message - A message JSON object.
          * @readonly
          */
         socket.on('sendMessage', function(message) {
+            MessageRateLimiter.update();
+
+
+            var spamWarning = MessageRateLimiter.spamWarning(),
+                spamDetected = MessageRateLimiter.spamDetected();
+
+
+            if (spamWarning && !spamDetected) {
+                socket.emit('errorNotice', '5');
+            }
+
+
+            if (spamDetected) {
+                Ban.IP(socket.session.ip_address, 120, 'Automatic ban for flooding the chat.', function(error, result) {
+                    io.sockets.in(socket.session.ip_address).emit('banNotice', {
+                        reason: result.reason,
+                        expires: result.expires
+                    });
+                    return;
+                });
+            }
+
+
             Message.add(socket.session, message, function(error, result) {
                 if (error) {
                     return;
@@ -143,6 +170,9 @@ module.exports = function(io) {
                 }
                 socket.broadcast.to('public').emit('newMessage', publicMessage);
                 socket.broadcast.to('staff').emit('newMessage', staffMessage);
+
+
+                MessageRateLimiter.decrease();
             });
         });
 
