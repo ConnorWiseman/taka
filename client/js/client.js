@@ -560,7 +560,10 @@ var taka = taka || function(settings) {
             var container = new Element('div');
             container.setAttribute('id', 'taka');
             container.css({
+                'fontFamily': 'sans-serif',
+                'fontSize': '12px',
                 'height': settings.height + 'px',
+                'position': 'relative',
                 'width': settings.width + 'px'
             });
 
@@ -1519,6 +1522,14 @@ var taka = taka || function(settings) {
 
 
             var promoteUser = function(dataArray) {
+                if (!isStaff()) {
+                    addError('You are not authorized to perform this action.');
+                    clearTextarea();
+                    enableTextarea();
+                    return;
+                }
+
+
                 if (typeof dataArray[1] !== 'undefined') {
                     socket.emit('promoteUsername', dataArray[1]);
                 }
@@ -1531,6 +1542,14 @@ var taka = taka || function(settings) {
 
 
             var demoteUser = function(dataArray) {
+                if (!isStaff()) {
+                    addError('You are not authorized to perform this action.');
+                    clearTextarea();
+                    enableTextarea();
+                    return;
+                }
+
+
                 if (typeof dataArray[1] !== 'undefined') {
                     socket.emit('demoteUsername', dataArray[1]);
                 }
@@ -2052,7 +2071,7 @@ var taka = taka || function(settings) {
 
 
                     var URL = settings.onlineUsers[currentUsername].URL,
-                        listItemText = '',
+                        listItemText = currentUsername,
                         instanceCount = settings.onlineUsers[currentUsername].instances.length;
 
                     if (instanceCount > 1) {
@@ -2073,7 +2092,7 @@ var taka = taka || function(settings) {
                         listItem.append(listItemLink);
                     }
                     else { 
-                        listItem.appendText(currentUsername);
+                        listItem.appendText(listItemText);
                     }
 
 
