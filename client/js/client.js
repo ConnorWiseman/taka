@@ -1518,6 +1518,30 @@ var taka = taka || function(settings) {
             };
 
 
+            var promoteUser = function(dataArray) {
+                if (typeof dataArray[1] !== 'undefined') {
+                    socket.emit('promoteUsername', dataArray[1]);
+                }
+                else {
+                    addError('/promote <username>');
+                }
+                clearTextarea();
+                enableTextarea();
+            };
+
+
+            var demoteUser = function(dataArray) {
+                if (typeof dataArray[1] !== 'undefined') {
+                    socket.emit('demoteUsername', dataArray[1]);
+                }
+                else {
+                    addError('/demote <username>');
+                }
+                clearTextarea();
+                enableTextarea();
+            };
+
+
             chatForm.on('submit', function(event) {
                 event.preventDefault();
 
@@ -1544,6 +1568,12 @@ var taka = taka || function(settings) {
                                 break;
                             case 'clear':
                                 clearChat();
+                                break;
+                            case 'promote':
+                                promoteUser(tokens);
+                                break;
+                            case 'demote':
+                                demoteUser(tokens);
                                 break;
                             default:
                                 socket.emit('sendMessage', messageContents);
@@ -2427,6 +2457,10 @@ var taka = taka || function(settings) {
                 },
 
 
+                /**
+                 * Deletes all messages from the chat history.
+                 * @readonly
+                 */
                 clearChat: function() {
                     messageList.removeChildren();
                 }

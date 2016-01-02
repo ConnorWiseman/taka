@@ -46,6 +46,8 @@ banned: {
         unbanUsername: true,
         loadMessages: true,
         deleteMessage: true,
+        promoteUsername: true,
+        demoteUsername: true,
         sendMessage: true,
         signOut: true,
         updateSettings: true,

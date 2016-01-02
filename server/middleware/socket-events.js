@@ -402,13 +402,34 @@ module.exports = function(io) {
 
 
         /**
-         * Bans a specified user from the application usingan IP address as criteria.
-         * @param {Object} data - An object containing fields to be added to the database.
+         * Deletes all the messages in the chat, then tells all clients to remove their chat history.
          * @readonly
          */
         socket.on('clearChat', function() {
             Message.deleteAll(function(error, result) {
                 io.emit('clearChat');
+            });
+        });
+
+
+        /**
+         * @readonly
+         * @todo Alert the user!
+         */
+        socket.on('promoteUsername', function(username) {
+            User.promote(username, function(error, result) {
+                // alert the user
+            });
+        });
+
+
+        /**
+         * @readonly
+         * @todo Alert the user!
+         */
+        socket.on('demoteUsername', function(username) {
+            User.demote(username, function(error, result) {
+                // alert the user
             });
         });
 

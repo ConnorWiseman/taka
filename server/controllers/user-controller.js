@@ -139,3 +139,33 @@ exports.update = function(username, information, callback) {
         return callback(null, result);
     });
 };
+
+
+/**
+ *
+ */
+exports.promote = function(username, callback) {
+    var query = { $and: [ { username: username }, { role: 'user' } ] };
+    var update = { role: 'mod' };
+    UserModel.update(query, update, function(error, result) {
+        if (error) {
+            return callback(error);
+        }
+        return callback(null, result);
+    });
+};
+
+
+/**
+ *
+ */
+exports.demote = function(username, callback) {
+    var query = { $and: [ { username: username }, { role: 'mod' } ] };
+    var update = { role: 'user' };
+    UserModel.update(query, update, function(error, result) {
+        if (error) {
+            return callback(error);
+        }
+        return callback(null, result);
+    });
+};
