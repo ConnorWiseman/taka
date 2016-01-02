@@ -1835,6 +1835,7 @@ var taka = taka || function(settings) {
                  * @readonly
                  */
                 banNotice: function(data) {
+                    console.log(data);
                     signInWindow.hide();
                     settingsWindow.hide();
                     onlineUsersWindow.hide();
@@ -1850,7 +1851,11 @@ var taka = taka || function(settings) {
                         'textAlign': 'center'
                     });
                     var banInformationNotice = new Element('div');
-                    banInformationNotice.text('You have been banned for the following reason: ');
+                    var banType = '';
+                    if (data.type === 'ip') {
+                        banType += ' IP ';
+                    }
+                    banInformationNotice.text('You have been' + banType + 'banned for the following reason: ');
                     banInformation.append(banInformationNotice);
                     var banInformationReason = new Element('div');
                     banInformationReason.css({

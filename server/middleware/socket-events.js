@@ -18,6 +18,37 @@ module.exports = function(io) {
 
 
     /**
+     * Gets an array of all the IP addresses currently associated with a given username.
+     * @param {string} username - A username to retrieve associated addresses of.
+     * @returns {Object} An array of IP addresses.
+     * @readonly
+     */
+    var getAddressesFromUsername = function(username) {
+        var guestClients = [],
+            roomName = io.sockets.adapter.rooms[username];
+
+
+        if (roomName) {
+            for (var client in roomName) {
+                guestClients.push(io.sockets.adapter.nsp.connected[client]);
+            }
+        }
+
+
+        var addresses = [];
+        for (var i = 0, numGuestClients = guestClients.length; i < numGuestClients; i++) {
+            var ip_address = guestClients[i].session.ip_address;
+            if (addresses.indexOf(ip_address) === -1) {
+                addresses.push(ip_address);
+            }
+        }
+
+
+        return addresses;
+    };
+
+
+    /**
      * Bans the specified IP address.
      * @param {string} ip_address - An IPv4 address to ban.
      * @param {number} duration   - The length of the ban, in seconds.
@@ -295,39 +326,26 @@ module.exports = function(io) {
 
 
         /**
-         * Removes the socket from the online users list when it disconnects.
+         * Bans a specified user from the application, using a username as criteria.
+         * If the username matches the pattern reserved for guests, bans the user by IP
+         * address instead.
+         * @param {Object} data - An object containing fields to be added to the database.
          * @readonly
+         * @todo Standardize the errors returned to be consistent with Mongoose/MongoDB's own.
          */
         socket.on('banUsername', function(data) {
             Ban.username(data.username, data.duration, data.reason, function(error, result) {
                 if (error) {
                     if (error === 'Cannot ban guests by username.') {
-                        var guestClients = [],
-                            roomName = io.sockets.adapter.rooms[data.username];
-
-
-                        if (roomName) {
-                            for (var client in roomName) {
-                                guestClients.push(io.sockets.adapter.nsp.connected[client]);
-                            }
-                        }
-
-
-                        var addressesToBan = [];
-                        for (var i = 0, numGuestClients = guestClients.length; i < numGuestClients; i++) {
-                            var ip_address = guestClients[i].session.ip_address;
-                            if (addressesToBan.indexOf(ip_address) === -1) {
-                                addressesToBan.push(ip_address);
-                            }
-                        }
+                        var addressesToBan = getAddressesFromUsername(data.username);
 
 
                         if (addressesToBan.length === 1) {
-                            banAddress(addressesToBan[0]);
+                            banAddress(addressesToBan[0], data.duration, data.reason);
                         }
                         else {
                             for (var j = 0, numAddresses = addressesToBan.length; j < numAddresses; j++) {
-                                banAddress(addressesToBan[j]);
+                                banAddress(addressesToBan[j], data.duration, data.reason);
                             }
                         }
                     }
@@ -343,6 +361,16 @@ module.exports = function(io) {
                     expires: result.expires
                 });
             });
+        });
+
+
+        /**
+         * Bans a specified user from the application usingan IP address as criteria.
+         * @param {Object} data - An object containing fields to be added to the database.
+         * @readonly
+         */
+        socket.on('banIP', function(data) {
+            banAddress(data.ip_address, data.duration, data.reason);
         });
 
 

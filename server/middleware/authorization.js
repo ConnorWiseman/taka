@@ -78,6 +78,7 @@ module.exports = function(socket, next) {
             if (result !== null) {
                 socket.session.role = 'banned';
                 socket.emit('banNotice', {
+                    type: (typeof result.username !== 'undefined') ? 'username' : 'ip',
                     reason: result.reason,
                     expires: result.expires
                 });

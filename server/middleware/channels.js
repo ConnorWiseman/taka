@@ -1,9 +1,6 @@
 'use strict';
 
 
-var address = require('../utilities/ip-address.js');
-
-
 /**
  * Joins an incoming websocket connection to all necessary rooms.
  * 
