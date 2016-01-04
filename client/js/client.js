@@ -58,10 +58,16 @@ var taka = taka || function(settings) {
      */
     var getCookie = function(key) {
         if (document.cookie !== '') {
-            var value = '; ' + document.cookie,
-                parts = value.split('; ' + key + '=');
-            if (parts.length === 2) {
-                return parts.pop().split(';').shift();
+            var cookiesArray = document.cookie.split(';');
+            for(var i=0; i < cookiesArray.length; i++) {
+                var cookie = cookiesArray[i];
+                while (cookie.charAt(0) === ' ') {
+                    cookie = cookie.substring(1, cookie.length);
+                }
+                if (cookie.indexOf(key + '=') === 0) {
+                    console.log('get', cookie.substring((key + '=').length, cookie.length));
+                    return cookie.substring((key + '=').length, cookie.length);
+                }
             }
         }
         return null;
@@ -80,12 +86,14 @@ var taka = taka || function(settings) {
         if (typeof expires === 'undefined' || expires === null) {
             var expires = new Date();
             expires.setTime(expires.getTime() + 31536000000);
-            expires = expires.toGMTString();
+            expires = expires.toUTCString();
         }
         if (typeof path === 'undefined' || path === null) {
             var path = '/';
         }
-        document.cookie = encodeURI(key) + '=' + encodeURI(value) + '; expires=' + expires + '; path=' + path;
+        var cookieString = encodeURI(key) + '=' + encodeURI(value) + '; expires=' + expires + '; path=' + path;
+        console.log('set', cookieString);
+        document.cookie = cookieString;
     };
 
 
@@ -484,6 +492,7 @@ var taka = taka || function(settings) {
         settings.host = '127.0.0.1';
         settings.path = '/chat';
         settings.query = 'session_id=' + getCookie('taka-session_id');
+        console.log('query', settings.query);
 
 
         settings.currentScript = getCurrentScript();
@@ -514,8 +523,8 @@ var taka = taka || function(settings) {
         }
         if (typeof settings.audio === 'undefined') {
             settings.audio = {
-                mp3: './audio/click.mp3',
-                ogg: './audio.click.ogg'
+                mp3: '../audio/click.mp3',
+                ogg: '../audio/click.ogg'
             };
         }
         if (typeof settings.animateMessages === 'undefined') {
@@ -912,7 +921,7 @@ var taka = taka || function(settings) {
              * @readonly
              */
             var parseImages = function(message) {
-                var imgRegex = /((https?):)?\/\/\S*(jpeg|jpg|png|gif|bmp)/i;
+                var imgRegex = /https?:\/\/(?:[a-z0-9\-]+\.)+[a-z]{2,6}(?:\/[^/#?]+)+\.(?:jpg|gif|png)/gi;
 
 
                 return message.replace(imgRegex, function(url) {
@@ -930,7 +939,7 @@ var taka = taka || function(settings) {
              * @readonly
              */
             var parseLinks = function(message) {
-                var urlRegex = /(?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,}))\.?)(?::\d{2,5})?(?:[/?#]\S*)?/gi;
+                var urlRegex = /(?:[^"])(?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,}))\.?)(?::\d{2,5})?(?:[/?#]\S*)?/gi;
 
 
 
@@ -2206,9 +2215,9 @@ var taka = taka || function(settings) {
                     var banInformationNotice = new Element('div');
                     var banType = '';
                     if (data.type === 'ip') {
-                        banType += ' IP ';
+                        banType += 'IP ';
                     }
-                    banInformationNotice.text('You have been' + banType + 'banned for the following reason: ');
+                    banInformationNotice.text('You have been ' + banType + 'banned for the following reason: ');
                     banInformation.append(banInformationNotice);
                     var banInformationReason = new Element('div');
                     banInformationReason.css({
