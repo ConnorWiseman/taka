@@ -772,7 +772,7 @@ var taka = taka || function(settings) {
                 });
                 avatar.css({
                     'float': 'left',
-                    'margin': '0 4px 4px 0',
+                    'margin': '0 4px 0 0',
                     'MozUserSelect': 'none',
                     'webkitUserSelect': 'none',
                     'msUserSelect': 'none',
