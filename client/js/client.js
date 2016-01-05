@@ -717,7 +717,7 @@ var taka = taka || function(settings) {
                 message.css({
                     'clear': 'both',
                     'minHeight': '39px',
-                    'padding': '4px 4px 0 4px',
+                    'padding': '4px',
                     'textAlign': 'left',
                     'wordWrap': 'break-word'
                 });
