@@ -573,6 +573,7 @@ var taka = taka || function(settings) {
                 'fontSize': '12px',
                 'height': settings.height + 'px',
                 'position': 'relative',
+                'textAlign': 'left',
                 'width': settings.width + 'px'
             });
 
