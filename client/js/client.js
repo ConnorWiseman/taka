@@ -621,8 +621,7 @@ var taka = taka || function(settings) {
             messageWrapper.addClass('message-list-wrapper');
             messageWrapper.css({
                 'display': 'inline-block',
-                'float': 'left',
-                'height': (settings.height - 98) + 'px',
+                'height': (settings.height - 94) + 'px',
                 'margin': '4px',
                 'overflow': 'auto',
                 'width': (settings.width - 16) + 'px'
@@ -718,7 +717,7 @@ var taka = taka || function(settings) {
                 message.css({
                     'clear': 'both',
                     'minHeight': '39px',
-                    'padding': '4px 4px 0 0',
+                    'padding': '4px 4px 0 4px',
                     'textAlign': 'left',
                     'wordWrap': 'break-word'
                 });
