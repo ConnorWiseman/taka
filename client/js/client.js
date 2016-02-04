@@ -65,7 +65,7 @@ var taka = taka || function(settings) {
                     cookie = cookie.substring(1, cookie.length);
                 }
                 if (cookie.indexOf(key + '=') === 0) {
-                    console.log('get', cookie.substring((key + '=').length, cookie.length));
+                    console.log('get ' + key + '::' + cookie.substring((key + '=').length, cookie.length));
                     return cookie.substring((key + '=').length, cookie.length);
                 }
             }
@@ -92,7 +92,7 @@ var taka = taka || function(settings) {
             var path = '/';
         }
         var cookieString = encodeURI(key) + '=' + encodeURI(value) + '; expires=' + expires + '; path=' + path;
-        console.log('set', cookieString);
+        console.log('set ' +  cookieString);
         document.cookie = cookieString;
     };
 
@@ -221,263 +221,263 @@ var taka = taka || function(settings) {
      */
     var Element = function(elementName) {
         this.HTMLElement = document.createElement(elementName);
+    };
+    
+    
+    /**
+     * Appends a specified object to an existing object, making it the last child in the node tree.
+     * @param {Object} child - A child object to append; either HTMLElement or Element
+     * @returns {this}
+     * @readonly
+     */
+    Element.prototype.append = function(child) {
+        if (child instanceof Element) {
+            this.HTMLElement.appendChild(child.HTMLElement);
+        }
+        else {
+            this.HTMLElement.appendChild(child);
+        }
+        return this;
+    };
 
 
-        /**
-         * Appends a specified object to an existing object, making it the last child in the node tree.
-         * @param {Object} child - A child object to append; either HTMLElement or Element
-         * @returns {this}
-         * @readonly
-         */
-        this.append = function(child) {
-            if (child instanceof Element) {
-                this.HTMLElement.appendChild(child.HTMLElement);
+    /**
+     * Prepends a specified object to an existing object, making it the first child in the node tree.
+     * @param {Object} child - A child object to append; either HTMLElement or Element
+     * @returns {this}
+     * @readonly
+     */
+    Element.prototype.prepend = function(child) {
+        if (child instanceof Element) {
+            this.HTMLElement.insertBefore(child.HTMLElement, this.HTMLElement.firstChild);
+        }
+        else {
+            this.HTMLElement.insertBefore(child, this.HTMLElement.firstChild)
+        }
+        return this;
+    };
+
+
+    /**
+     * Removes the selected child from an existing object.
+     * @returns {this}
+     * @readonly
+     */
+    Element.prototype.removeChild = function(child) {
+        if (child instanceof Element) {
+            this.HTMLElement.removeChild(child.HTMLElement);
+        }
+        else {
+            this.HTMLElement.removeChild(child);
+        }
+        return this;
+    };
+
+
+    /**
+     * Removes all children from an existing object.
+     * @returns {this}
+     * @readonly
+     */
+    Element.prototype.removeChildren = function() {
+        while (this.HTMLElement.firstChild) {
+            this.removeChild(this.HTMLElement.firstChild);
+        }
+        return this;
+    };
+
+
+    /**
+     * Appends a specified string of text to an existing object.
+     * @param {string} string - Some text to append.
+     * @returns {this}
+     * @readonly
+     */
+    Element.prototype.appendText = function(string) {
+        var textNode = document.createTextNode(String(string));
+        this.HTMLElement.appendChild(textNode);
+        return this;
+    };
+
+
+    /**
+     * Sets the contents of the Element to a specified string of text.
+     * @param {string} string - Some text to use for replacement.
+     * @returns {this}
+     * @readonly
+     */
+    Element.prototype.text = function(string) {
+        this.removeChildren();
+        this.appendText(String(string));
+        return this;
+    };
+
+
+    /**
+     * Sets the contents of the Element to a specified string of HTML.
+     * @param {string} string - Some HTML to use for replacement.
+     * @returns {this}
+     * @readonly
+     */
+    Element.prototype.html = function(string) {
+        this.removeChildren();
+        this.HTMLElement.innerHTML = String(string);
+        return this;
+    };
+
+
+    /**
+     * Adds the specified attribute to the element.
+     * @param {string} attribute - An attribute to set.
+     * @param {string} value     - The value to set.
+     * @returns {this}
+     * @readonly
+     */
+    Element.prototype.setAttribute = function(attribute, value) {
+        this.HTMLElement[String(attribute)] = String(value);
+        return this;
+    };
+
+
+    /**
+     * Adds all the specified attributes to the element.
+     * @param {Object} attributes - An object of attributes in key-value pairs.
+     * @returns {this}
+     * @readonly
+     */
+    Element.prototype.setAttributes = function(attributes) {
+        for (var attribute in attributes) {
+            this.HTMLElement[String(attribute)] = attributes[attribute];
+        }
+        return this;
+    };
+
+
+    /**
+     * Removes the specified attribute from the element.
+     * @param {string} attribute - An attribute to remove.
+     * @returns {this}
+     * @readonly
+     */
+    Element.prototype.removeAttribute = function(attribute) {
+        this.HTMLElement.removeAttribute(attribute);
+        return this;
+    };
+
+
+    /**
+     * Adds the specified data value to the element.
+     * @param {string} key   - A data attribute to set.
+     * @param {string} value - The value to set.
+     * @returns {Object} - Chatbox.prototype.Element
+     */
+    Element.prototype.data = function(key, value) {
+        this.HTMLElement.dataset[String(key)] = String(value);
+        return this;
+    };
+
+
+    /**
+     * Adds all the specified styles to the element.
+     * @param {Object} styles - An object of styles in key-value pairs.
+     * @returns {this}
+     * @readonly
+     */
+    Element.prototype.css = function(styles) {
+        for (var rule in styles) {
+            this.HTMLElement.style[String(rule)] = String(styles[rule]);
+        }
+        return this;
+    };
+
+
+    /**
+     * Adds a class name to an existing object.
+     * @param {string} className - The name of the class to add.
+     * @returns {this}
+     * @readonly
+     */
+    Element.prototype.addClass = function(className) {
+        this.HTMLElement.classList.add(String(className));
+        return this;
+    };
+
+
+    /**
+     * Removes a class name to an existing object.
+     * @param {string} className - The name of the class to remove.
+     * @returns {this}
+     * @readonly
+     */
+    Element.prototype.removeClass = function(className) {
+        this.HTMLElement.classList.remove(String(className));
+        return this;
+    };
+
+
+    /**
+     * Toggles a specified class name on an existing object.
+     * @param {string} className - The name of the class to toggle.
+     * @returns {this}
+     * @readonly
+     */
+    Element.prototype.toggleClass = function(className) {
+        this.HTMLElement.classList.toggle(String(className));
+        return this;
+    };
+
+
+    /**
+     * Attaches a specified event listener to the element.
+     * @param {string} type - The type of event to listen for.
+     * @param {argumentlessCallback} callback - A callback function to execute when the event fires.
+     * @returns {this}
+     * @readonly
+     */
+    Element.prototype.on = function(type, callback) {
+        this.HTMLElement.addEventListener(String(type), callback);
+        return this;
+    };
+
+
+    /**
+     * Animates scrolling on an element to a specified position.
+     * Uses this beautiful code snippet: http://stackoverflow.com/a/26808520/2301088
+     * @param {number} targetPosition - The position to scroll to.
+     * @param {number} speed          - The speed to animate the scrolling.
+     * @returns {this}
+     * @readonly
+     */
+    Element.prototype.animateScrollTo = function(targetPosition, speed) {
+        var currentPosition = this.HTMLElement.scrollTop,
+            currentTime = 0;
+
+        var time = Math.max(0.5, Math.min(Math.abs(currentPosition - targetPosition) / speed, 1));
+
+
+        var easeOut = function(position) {
+            return Math.sin(position * (Math.PI / 2));
+        };
+
+
+        var animateScroll = function() {
+            currentTime += 1 / 60;
+
+            var p = currentTime / time;
+            var t = easeOut(p);
+
+            if (p < 1) {
+                this.HTMLElement.scrollTop = currentPosition + ((targetPosition - currentPosition) * t);
+                requestAnimationFrame(animateScroll);
             }
             else {
-                this.HTMLElement.appendChild(child);
+                this.HTMLElement.scrollTop = targetPosition;
+                return this;
             }
-            return this;
-        };
+        }.bind(this);
 
 
-        /**
-         * Prepends a specified object to an existing object, making it the first child in the node tree.
-         * @param {Object} child - A child object to append; either HTMLElement or Element
-         * @returns {this}
-         * @readonly
-         */
-        this.prepend = function(child) {
-            if (child instanceof Element) {
-                this.HTMLElement.insertBefore(child.HTMLElement, this.HTMLElement.firstChild);
-            }
-            else {
-                this.HTMLElement.insertBefore(child, this.HTMLElement.firstChild)
-            }
-            return this;
-        };
-
-
-        /**
-         * Removes the selected child from an existing object.
-         * @returns {this}
-         * @readonly
-         */
-        this.removeChild = function(child) {
-            if (child instanceof Element) {
-                this.HTMLElement.removeChild(child.HTMLElement);
-            }
-            else {
-                this.HTMLElement.removeChild(child);
-            }
-            return this;
-        };
-
-
-        /**
-         * Removes all children from an existing object.
-         * @returns {this}
-         * @readonly
-         */
-        this.removeChildren = function() {
-            while (this.HTMLElement.firstChild) {
-                this.removeChild(this.HTMLElement.firstChild);
-            }
-            return this;
-        };
-
-
-        /**
-         * Appends a specified string of text to an existing object.
-         * @param {string} string - Some text to append.
-         * @returns {this}
-         * @readonly
-         */
-        this.appendText = function(string) {
-            var textNode = document.createTextNode(String(string));
-            this.HTMLElement.appendChild(textNode);
-            return this;
-        };
-
-
-        /**
-         * Sets the contents of the Element to a specified string of text.
-         * @param {string} string - Some text to use for replacement.
-         * @returns {this}
-         * @readonly
-         */
-        this.text = function(string) {
-            this.removeChildren();
-            this.appendText(String(string));
-            return this;
-        };
-
-
-        /**
-         * Sets the contents of the Element to a specified string of HTML.
-         * @param {string} string - Some HTML to use for replacement.
-         * @returns {this}
-         * @readonly
-         */
-        this.html = function(string) {
-            this.removeChildren();
-            this.HTMLElement.innerHTML = String(string);
-            return this;
-        };
-
-
-        /**
-         * Adds the specified attribute to the element.
-         * @param {string} attribute - An attribute to set.
-         * @param {string} value     - The value to set.
-         * @returns {this}
-         * @readonly
-         */
-        this.setAttribute = function(attribute, value) {
-            this.HTMLElement[String(attribute)] = String(value);
-            return this;
-        };
-
-
-        /**
-         * Adds all the specified attributes to the element.
-         * @param {Object} attributes - An object of attributes in key-value pairs.
-         * @returns {this}
-         * @readonly
-         */
-        this.setAttributes = function(attributes) {
-            for (var attribute in attributes) {
-                this.HTMLElement[String(attribute)] = attributes[attribute];
-            }
-            return this;
-        };
-
-
-        /**
-         * Removes the specified attribute from the element.
-         * @param {string} attribute - An attribute to remove.
-         * @returns {this}
-         * @readonly
-         */
-        this.removeAttribute = function(attribute) {
-            this.HTMLElement.removeAttribute(attribute);
-            return this;
-        };
-
-
-        /**
-         * Adds the specified data value to the element.
-         * @param {string} key   - A data attribute to set.
-         * @param {string} value - The value to set.
-         * @returns {Object} - Chatbox.prototype.Element
-         */
-        this.data = function(key, value) {
-            this.HTMLElement.dataset[String(key)] = String(value);
-            return this;
-        };
-
-
-        /**
-         * Adds all the specified styles to the element.
-         * @param {Object} styles - An object of styles in key-value pairs.
-         * @returns {this}
-         * @readonly
-         */
-        this.css = function(styles) {
-            for (var rule in styles) {
-                this.HTMLElement.style[String(rule)] = String(styles[rule]);
-            }
-            return this;
-        };
-
-
-        /**
-         * Adds a class name to an existing object.
-         * @param {string} className - The name of the class to add.
-         * @returns {this}
-         * @readonly
-         */
-        this.addClass = function(className) {
-            this.HTMLElement.classList.add(String(className));
-            return this;
-        };
-
-
-        /**
-         * Removes a class name to an existing object.
-         * @param {string} className - The name of the class to remove.
-         * @returns {this}
-         * @readonly
-         */
-        this.removeClass = function(className) {
-            this.HTMLElement.classList.remove(String(className));
-            return this;
-        };
-
-
-        /**
-         * Toggles a specified class name on an existing object.
-         * @param {string} className - The name of the class to toggle.
-         * @returns {this}
-         * @readonly
-         */
-        this.toggleClass = function(className) {
-            this.HTMLElement.classList.toggle(String(className));
-            return this;
-        };
-
-
-        /**
-         * Attaches a specified event listener to the element.
-         * @param {string} type - The type of event to listen for.
-         * @param {argumentlessCallback} callback - A callback function to execute when the event fires.
-         * @returns {this}
-         * @readonly
-         */
-        this.on = function(type, callback) {
-            this.HTMLElement.addEventListener(String(type), callback);
-            return this;
-        };
-
-
-        /**
-         * Animates scrolling on an element to a specified position.
-         * Uses this beautiful code snippet: http://stackoverflow.com/a/26808520/2301088
-         * @param {number} targetPosition - The position to scroll to.
-         * @param {number} speed          - The speed to animate the scrolling.
-         * @returns {this}
-         * @readonly
-         */
-        this.animateScrollTo = function(targetPosition, speed) {
-            var currentPosition = this.HTMLElement.scrollTop,
-                currentTime = 0;
-
-            var time = Math.max(0.5, Math.min(Math.abs(currentPosition - targetPosition) / speed, 1));
-
-
-            var easeOut = function(position) {
-                return Math.sin(position * (Math.PI / 2));
-            };
-
-
-            var animateScroll = function() {
-                currentTime += 1 / 60;
-
-                var p = currentTime / time;
-                var t = easeOut(p);
-
-                if (p < 1) {
-                    this.HTMLElement.scrollTop = currentPosition + ((targetPosition - currentPosition) * t);
-                    requestAnimationFrame(animateScroll);
-                }
-                else {
-                    this.HTMLElement.scrollTop = targetPosition;
-                    return this;
-                }
-            }.bind(this);
-
-
-            animateScroll();
-        };
+        animateScroll();
     };
 
 
@@ -492,7 +492,7 @@ var taka = taka || function(settings) {
         settings.host = '127.0.0.1';
         settings.path = '/chat';
         settings.query = 'session_id=' + getCookie('taka-session_id');
-        console.log('query', settings.query);
+        console.log('query ' + settings.query);
 
 
         settings.currentScript = getCurrentScript();
@@ -880,8 +880,9 @@ var taka = taka || function(settings) {
              * @readonly
              */
             var filterMessageContents = function(message) {
-                var tempDiv = document.createElement('div');
-                tempDiv.textContent = message;
+                var tempDiv = document.createElement('div'),
+                    textMethod = ('innerText' in tempDiv)? 'innerText' : 'textContent';
+                tempDiv[textMethod] = message;
                 return tempDiv.innerHTML;
             };
 
